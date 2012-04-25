@@ -20,7 +20,8 @@ import com.todoroo.astrid.api.FilterWithCustomIntent;
 
 public class TaskListFragmentPagerAdapter extends FragmentStatePagerAdapter implements FilterDataSourceChangedListener {
 
-    private final HashMap<Integer, Fragment> positionToFragment;
+    private final HashMap<TaskListFragment, Integer> lastKnownPositions;
+    private final HashMap<Integer, TaskListFragment> positionToFragment;
     private final HashMap<Filter, Class<?>> customTaskLists;
 
     private final FilterAdapter filterAdapter; // Shares an adapter instance with the filter list fragment
@@ -29,7 +30,8 @@ public class TaskListFragmentPagerAdapter extends FragmentStatePagerAdapter impl
         super(fm);
         this.filterAdapter = filterAdapter;
         filterAdapter.setDataSourceChangedListener(this);
-        positionToFragment = new HashMap<Integer, Fragment>();
+        positionToFragment = new HashMap<Integer, TaskListFragment>();
+        lastKnownPositions = new HashMap<TaskListFragment, Integer>();
         customTaskLists = new HashMap<Filter, Class<?>>();
     }
 
@@ -45,8 +47,9 @@ public class TaskListFragmentPagerAdapter extends FragmentStatePagerAdapter impl
     @Override
     public Fragment getItem(int position) {
         Filter filter = filterAdapter.getItem(position);
-        Fragment fragment = getFragmentForFilter(filter);
+        TaskListFragment fragment = getFragmentForFilter(filter);
         positionToFragment.put(position, fragment);
+        lastKnownPositions.put(fragment, position);
         return fragment;
     }
 
@@ -78,6 +81,20 @@ public class TaskListFragmentPagerAdapter extends FragmentStatePagerAdapter impl
         filterAdapter.remove(filter);
     }
 
+    @Override
+    public int getItemPosition(Object object) {
+        TaskListFragment frag = (TaskListFragment) object;
+        int filterPosition = filterAdapter.getPosition(frag.getFilter());
+        if (filterPosition < 0)
+            return POSITION_NONE;
+        Integer lastKnownPosition = lastKnownPositions.get(frag);
+        if (lastKnownPosition == null || lastKnownPosition.intValue() != filterPosition) {
+            lastKnownPositions.put(frag, filterPosition);
+            return filterPosition;
+        }
+        return POSITION_UNCHANGED;
+    }
+
     /**
      * Get the filter at the specified position
      * @param position
@@ -101,7 +118,7 @@ public class TaskListFragmentPagerAdapter extends FragmentStatePagerAdapter impl
         customTaskLists.remove(f);
     }
 
-    private Fragment getFragmentForFilter(Filter filter) {
+    private TaskListFragment getFragmentForFilter(Filter filter) {
         Bundle extras = getExtrasForFilter(filter);
         Class<?> customList = customTaskLists.get(filter);
         if (customList == null)

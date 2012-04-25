@@ -216,6 +216,16 @@ public class FilterAdapter extends ArrayAdapter<Filter> {
             to.listingIcon = from.listingIcon;
     }
 
+    public int addWithReorder(Filter filter) {
+        int index = getPosition(filter);
+        setNotifyOnChange(false);
+        if (index >= 0)
+            remove(filter);
+        setNotifyOnChange(true);
+        add(filter);
+        return getCount() - 1;
+    }
+
     public void setLastSelected(int lastSelected) {
         mSelectedIndex = lastSelected;
     }
@@ -394,10 +404,10 @@ public class FilterAdapter extends ArrayAdapter<Filter> {
                 if (filter instanceof FilterCategory) {
                     Filter[] children = ((FilterCategory) filter).children;
                     for (Filter f : children) {
-                        addOrLookup(f);
+                        addWithReorder(f);
                     }
                 } else if (filter instanceof Filter){
-                    addOrLookup((Filter) filter);
+                    addWithReorder((Filter) filter);
                 }
             }
 
