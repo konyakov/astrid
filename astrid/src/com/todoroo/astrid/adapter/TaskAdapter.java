@@ -79,6 +79,7 @@ import com.todoroo.astrid.api.TaskDecoration;
 import com.todoroo.astrid.api.TaskDecorationExposer;
 import com.todoroo.astrid.core.LinkActionExposer;
 import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.TagData;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.files.FileMetadata;
 import com.todoroo.astrid.files.FilesAction;
@@ -91,7 +92,6 @@ import com.todoroo.astrid.service.StatisticsConstants;
 import com.todoroo.astrid.service.StatisticsService;
 import com.todoroo.astrid.service.TaskService;
 import com.todoroo.astrid.service.ThemeService;
-import com.todoroo.astrid.tags.TagService;
 import com.todoroo.astrid.timers.TimerDecorationExposer;
 import com.todoroo.astrid.ui.CheckableImageView;
 import com.todoroo.astrid.utility.Constants;
@@ -116,7 +116,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
             Metadata.ID.name).as("taskRabId"); //$NON-NLS-1$
 
     @SuppressWarnings("nls")
-    private static final StringProperty TAGS = new StringProperty(null, "group_concat(" + TaskListFragment.TAGS_METADATA_JOIN + "." + TagService.TAG.name + ", '  |  ')").as("tags");
+    private static final StringProperty TAGS = new StringProperty(null, "group_concat(" + TagData.NAME.name + ", '  |  ')").as("tags");
 
     // --- other constants
 
