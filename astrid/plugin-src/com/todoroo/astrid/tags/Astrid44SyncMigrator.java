@@ -2,31 +2,43 @@ package com.todoroo.astrid.tags;
 
 import android.util.Log;
 
+import com.todoroo.andlib.data.DatabaseDao;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Join;
 import com.todoroo.andlib.sql.Query;
+import com.todoroo.andlib.utility.Pair;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.dao.MetadataDao.MetadataCriteria;
+import com.todoroo.astrid.dao.TagDataDao;
+import com.todoroo.astrid.dao.TaskDao;
 import com.todoroo.astrid.dao.TaskToTagDao;
+import com.todoroo.astrid.dao.UpdateDao;
 import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.RemoteModel;
 import com.todoroo.astrid.data.TagData;
+import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.data.TaskToTag;
+import com.todoroo.astrid.data.Update;
+import com.todoroo.astrid.helper.UUIDHelper;
 import com.todoroo.astrid.service.MetadataService;
 import com.todoroo.astrid.service.TagDataService;
 import com.todoroo.astrid.utility.Constants;
 
-public class TagsTableMigrator {
+public class Astrid44SyncMigrator {
 
     @Autowired private MetadataService metadataService;
     @Autowired private TagDataService tagDataService;
+    @Autowired private TagDataDao tagDataDao;
+    @Autowired private TaskDao taskDao;
+    @Autowired private UpdateDao updateDao;
     @Autowired private TaskToTagDao taskToTagDao;
 
     private static final String PREF_MIGRATED_TASKS_TO_TAGS = "tasks_to_tags_migration"; //$NON-NLS-1$
 
-    public TagsTableMigrator() {
+    public Astrid44SyncMigrator() {
         DependencyInjectionService.getInstance().inject(this);
     }
 
@@ -35,7 +47,9 @@ public class TagsTableMigrator {
         if (Preferences.getBoolean(PREF_MIGRATED_TASKS_TO_TAGS, false))
             return;
 
+        // --------------
         // First assert that a TagData object exists for each tag metadata
+        // --------------
         Query noTagDataQuery = Query.select(Metadata.PROPERTIES).where(Criterion.and(
                 MetadataCriteria.withKey(TagService.KEY),
                 Criterion.not(TagService.TAG.in(Query.select(TagData.NAME).from(TagData.TABLE))))).groupBy(TagService.TAG);
@@ -57,8 +71,24 @@ public class TagsTableMigrator {
             noTagData.close();
         }
 
-        // Then move all tag metadata to the new table
-        Query joinedTagData = Query.select(Metadata.TASK, TagService.TAG, TagData.ID)
+        // --------------
+        // Then assert that every remote model has a remote id, by generating one using the uuid generator for all those without one
+        // --------------
+        Query tagsWithoutUUIDQuery = Query.select(TagData.ID, TagData.REMOTE_ID).where(Criterion.or(TagData.REMOTE_ID.isNull(), TagData.REMOTE_ID.eq(0)));
+        assertUUIDsExist(tagsWithoutUUIDQuery, new TagData(), tagDataDao);
+
+        Query tasksWithoutUUIDQuery = Query.select(Task.ID, Task.REMOTE_ID).where(Criterion.or(Task.REMOTE_ID.isNull(), Task.REMOTE_ID.eq(0)));
+        assertUUIDsExist(tasksWithoutUUIDQuery, new Task(), taskDao);
+
+        Query updatesWithoutUUIDQuery = Query.select(Update.ID, Update.REMOTE_ID).where(Criterion.or(Update.REMOTE_ID.isNull(), Update.REMOTE_ID.eq(0)));
+        assertUUIDsExist(updatesWithoutUUIDQuery, new Update(), updateDao);
+
+
+
+        // --------------
+        // Finally, move all tag metadata to the new table
+        // --------------
+        Query joinedTagData = Query.select(Metadata.TASK, TagService.TAG, TagData.REMOTE_ID)
                 .join(Join.left(TagData.TABLE,
                         Criterion.and(MetadataCriteria.withKey(TagService.KEY), TagService.TAG.eq(TagData.NAME))));
 
@@ -75,7 +105,7 @@ public class TagsTableMigrator {
                     Log.w("tag-link-migrate", "LINK FROM TASK " + tag.getValue(Metadata.TASK) + " TO TAG " + tag.getValue(TagService.TAG));
 
                 link.setValue(TaskToTag.TASK_ID, tag.getValue(Metadata.TASK));
-                link.setValue(TaskToTag.TAG_ID, tag.getValue(TagData.ID));
+                link.setValue(TaskToTag.TAG_REMOTEID, allTagLinks.get(TagData.REMOTE_ID));
 
                 taskToTagDao.createNew(link);
             }
@@ -84,6 +114,21 @@ public class TagsTableMigrator {
         }
 
         Preferences.setBoolean(PREF_MIGRATED_TASKS_TO_TAGS, true);
+    }
+
+    private <TYPE extends RemoteModel> void assertUUIDsExist(Query query, TYPE instance, DatabaseDao<TYPE> dao) {
+        TodorooCursor<TYPE> cursor = dao.query(query);
+        try {
+            for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                instance.readPropertiesFromCursor(cursor);
+                Pair<Long, String> uuidPair = UUIDHelper.newUUID();
+                instance.setValue(RemoteModel.REMOTE_ID_PROPERTY, uuidPair.getLeft());
+                instance.setValue(RemoteModel.PROOF_TEXT_PROPERTY, uuidPair.getRight());
+                dao.saveExisting(instance);
+            }
+        } finally {
+            cursor.close();
+        }
     }
 
 }
