@@ -463,11 +463,6 @@ public class ActFmSyncV2Provider extends SyncV2Provider {
                         fetchTasksForTag(tagData, manual, callback, finisher);
                         fetchUpdatesForTag(tagData, manual, callback, finisher);
                     }
-
-                    if(!oldName.equals(tagData.getValue(TagData.NAME))) {
-                        TagService.getInstance().rename(oldName,
-                                tagData.getValue(TagData.NAME));
-                    }
                 } catch (IOException e) {
                     exceptionService.reportError("sync-io", e); //$NON-NLS-1$
                 } catch (JSONException e) {

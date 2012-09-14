@@ -310,13 +310,12 @@ public class TagFilterExposer extends BroadcastReceiver implements AstridFilterE
             if (text == null || text.length() == 0) {
                 return false;
             } else {
-                int renamed = tagService.rename(tag, text);
                 TagData tagData = tagDataService.getTag(tag, TagData.ID, TagData.NAME);
                 if (tagData != null) {
                     tagData.setValue(TagData.NAME, text);
                     tagDataService.save(tagData);
                 }
-                Toast.makeText(this, getString(R.string.TEA_tags_renamed, tag, text, renamed),
+                Toast.makeText(this, getString(R.string.TEA_tags_renamed, tag, text),
                         Toast.LENGTH_SHORT).show();
                 return true;
             }

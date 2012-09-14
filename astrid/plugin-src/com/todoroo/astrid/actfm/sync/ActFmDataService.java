@@ -185,8 +185,6 @@ public final class ActFmDataService {
             TagData tagData = new TagData();
             if(!cursor.isAfterLast()) {
                 tagData.readFromCursor(cursor);
-                if(!tagData.getValue(TagData.NAME).equals(tagObject.getString("name")))
-                    TagService.getInstance().rename(tagData.getValue(TagData.NAME), tagObject.getString("name"));
                 cursor.moveToNext();
             }
             ActFmSyncService.JsonHelper.tagFromJson(tagObject, tagData);
@@ -196,8 +194,6 @@ public final class ActFmDataService {
 
             for(; !cursor.isAfterLast(); cursor.moveToNext()) {
                 tagData.readFromCursor(cursor);
-                if(!tagData.getValue(TagData.NAME).equals(tagObject.getString("name")))
-                    TagService.getInstance().rename(tagData.getValue(TagData.NAME), tagObject.getString("name"));
                 tagDataService.delete(tagData.getId());
             }
         } finally {
@@ -214,8 +210,6 @@ public final class ActFmDataService {
             TagData tagData = new TagData();
             if (!cursor.isAfterLast()) {
                 tagData.readFromCursor(cursor);
-                if(!tagData.getValue(TagData.NAME).equals(featObject.getString("name")))
-                    TagService.getInstance().rename(tagData.getValue(TagData.NAME), featObject.getString("name"));
                 cursor.moveToNext();
             }
             ActFmSyncService.JsonHelper.featuredListFromJson(featObject, tagData);

@@ -163,17 +163,27 @@ public final class TagService {
 
     }
 
-    public static Criterion memberOfTagData(long tagDataRemoteId) {
-        return Task.ID.in(Query.select(Metadata.TASK).from(Metadata.TABLE).where(
-                Criterion.and(Metadata.KEY.eq(KEY), REMOTE_ID.eq(tagDataRemoteId))));
+    public static Criterion memberOfTagData(long tagDataId, long tagDataRemoteId) {
+        Criterion criterion = Criterion.none;
+        if (tagDataId > 0 && tagDataRemoteId > 0) {
+            criterion = Criterion.or(TaskToTag.TAG_ID.eq(tagDataId), TaskToTag.TAG_REMOTEID.eq(tagDataRemoteId));
+        } else if (tagDataId > 0) {
+            criterion = TaskToTag.TAG_ID.eq(tagDataId);
+        } else if (tagDataRemoteId > 0) {
+            criterion = TaskToTag.TAG_REMOTEID.eq(tagDataRemoteId);
+        }
+
+        return Task.ID.in(Query.select(TaskToTag.TASK_ID).from(TaskToTag.TABLE).where(criterion));
     }
 
+    @Deprecated
     public static Criterion tagEq(String tag, Criterion additionalCriterion) {
         return Criterion.and(
                 MetadataCriteria.withKey(KEY), TAG.eq(tag),
                 additionalCriterion);
     }
 
+    @Deprecated
     public static Criterion tagEqIgnoreCase(String tag, Criterion additionalCriterion) {
         return Criterion.and(
                 MetadataCriteria.withKey(KEY), TAG.eqCaseInsensitive(tag),
@@ -181,10 +191,10 @@ public final class TagService {
     }
 
     public QueryTemplate untaggedTemplate() {
-        String[] emergentTags = getEmergentTags();
+        Long[] emergentTagIds = getEmergentTagIds();
 
         return new QueryTemplate().where(Criterion.and(
-                Criterion.not(Task.ID.in(Query.select(Metadata.TASK).from(Metadata.TABLE).where(Criterion.and(MetadataCriteria.withKey(KEY), Criterion.not(TAG.in(emergentTags)))))),
+                Criterion.not(Task.ID.in(Query.select(TaskToTag.TASK_ID).from(TaskToTag.TABLE).where(Criterion.not(TaskToTag.TAG_ID.in(emergentTagIds))))),
                 TaskCriteria.isActive(),
                 TaskApiDao.TaskCriteria.ownedByMe(),
                 TaskCriteria.isVisible()));
@@ -231,6 +241,23 @@ public final class TagService {
                 emergent.moveToPosition(i);
                 data.readFromCursor(emergent);
                 tags[i] = data.getValue(TagData.NAME);
+            }
+            return tags;
+        } finally {
+            emergent.close();
+        }
+    }
+
+    public Long[] getEmergentTagIds() {
+        TodorooCursor<TagData> emergent = tagDataService.query(Query.select(TagData.ID)
+                .where(Functions.bitwiseAnd(TagData.FLAGS, TagData.FLAG_EMERGENT).gt(0)));
+        try {
+            Long[] tags = new Long[emergent.getCount()];
+            TagData data = new TagData();
+            for (int i = 0; i < emergent.getCount(); i++) {
+                emergent.moveToPosition(i);
+                data.readFromCursor(emergent);
+                tags[i] = data.getId();
             }
             return tags;
         } finally {
@@ -431,10 +458,7 @@ public final class TagService {
         return PluginServices.getMetadataService().deleteWhere(tagEqIgnoreCase(tag, Criterion.all));
     }
 
-    public int rename(String oldTag, String newTag) {
-        return renameHelper(oldTag, newTag, false);
-    }
-
+    @Deprecated
     public int renameCaseSensitive(String oldTag, String newTag) { // Need this for tag case migration process
         return renameHelper(oldTag, newTag, true);
     }

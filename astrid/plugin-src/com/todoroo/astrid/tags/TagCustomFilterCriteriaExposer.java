@@ -5,6 +5,8 @@
  */
 package com.todoroo.astrid.tags;
 
+import java.util.ArrayList;
+
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,6 +26,7 @@ import com.todoroo.astrid.dao.MetadataDao;
 import com.todoroo.astrid.dao.TaskDao;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.Task;
+import com.todoroo.astrid.tags.TagService.Tag;
 
 public class TagCustomFilterCriteriaExposer extends BroadcastReceiver {
     private static final String IDENTIFIER_TAG_IS = "tag_is"; //$NON-NLS-1$
@@ -39,11 +42,10 @@ public class TagCustomFilterCriteriaExposer extends BroadcastReceiver {
 
         // built in criteria: tags
         {
-            TagService.Tag[] tags = TagService.getInstance().getGroupedTags(TagService.GROUPED_TAGS_BY_SIZE,
-                            TaskDao.TaskCriteria.activeAndVisible(), false);
-            String[] tagNames = new String[tags.length];
-            for(int i = 0; i < tags.length; i++)
-                tagNames[i] = tags[i].tag;
+            ArrayList<Tag> tags = TagService.getInstance().getTagList();
+            String[] tagNames = new String[tags.size()];
+            for(int i = 0; i < tags.size(); i++)
+                tagNames[i] = tags.get(i).tag;
             ContentValues values = new ContentValues();
             values.put(Metadata.KEY.name, TagService.KEY);
             values.put(TagService.TAG.name, "?");
@@ -51,13 +53,13 @@ public class TagCustomFilterCriteriaExposer extends BroadcastReceiver {
                     IDENTIFIER_TAG_IS,
                     context.getString(R.string.CFC_tag_text),
                     Query.select(Metadata.TASK).from(Metadata.TABLE).join(Join.inner(
-                                Task.TABLE, Metadata.TASK.eq(Task.ID))).where(Criterion.and(
-                            TaskDao.TaskCriteria.activeAndVisible(),
-                            MetadataDao.MetadataCriteria.withKey(TagService.KEY),
-                            TagService.TAG.eq("?"))).toString(),
-                    values, tagNames, tagNames,
-                    ((BitmapDrawable)r.getDrawable(TagService.getDefaultImageIDForTag(0))).getBitmap(),
-                    context.getString(R.string.CFC_tag_name));
+                            Task.TABLE, Metadata.TASK.eq(Task.ID))).where(Criterion.and(
+                                    TaskDao.TaskCriteria.activeAndVisible(),
+                                    MetadataDao.MetadataCriteria.withKey(TagService.KEY),
+                                    TagService.TAG.eq("?"))).toString(),
+                                    values, tagNames, tagNames,
+                                    ((BitmapDrawable)r.getDrawable(TagService.getDefaultImageIDForTag(0))).getBitmap(),
+                                    context.getString(R.string.CFC_tag_name));
             ret[j++] = criterion;
         }
 

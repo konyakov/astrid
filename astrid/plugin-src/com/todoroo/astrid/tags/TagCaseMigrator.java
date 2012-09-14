@@ -40,6 +40,7 @@ public class TagCaseMigrator {
     private final HashMap<String, Long> nameToRemoteId = new HashMap<String, Long>();
     private final HashMap<String, Integer> nameCountMap = new HashMap<String, Integer>();
 
+    @SuppressWarnings("deprecation") // Older migration, ok to use these here
     public void performTagCaseMigration(@SuppressWarnings("unused") Context context) {
         if (!Preferences.getBoolean(PREF_CASE_MIGRATION_PERFORMED, false)) {
             TagService.Tag[] allTagData = TagService.getInstance().getGroupedTags(

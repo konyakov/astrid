@@ -98,7 +98,7 @@
   <string name="TEA_tags_left">You left shared list %1$s, affecting %2$d tasks</string>
 
   <!-- Toast notification that a tag has been renamed (%1$s - old name, %2$s - new name, %3$d - # tasks) -->
-  <string name="TEA_tags_renamed">Renamed %1$s with %2$s for %3$d tasks</string>
+  <string name="TEA_tags_renamed">Renamed %1$s to %2$s</string>
   
   <!-- Tag case migration -->
   <string name="tag_case_migration_notice">We\'ve noticed that you have some lists that have the same name with different capitalizations. We think you may have intended them to 
