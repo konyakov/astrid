@@ -890,8 +890,6 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
 
     public static final String TR_METADATA_JOIN = "for_taskrab"; //$NON-NLS-1$
 
-    public static final String TAGS_METADATA_JOIN = "for_tags"; //$NON-NLS-1$
-
     /**
      * Fill in the Task List with current items
      *
@@ -903,7 +901,14 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
         if (filter == null)
             return;
 
+        long tagId = 0L;
+        if (getActiveTagData() != null)
+            tagId = getActiveTagData().getId();
+
         Long[] emergentTags = TagService.getInstance().getEmergentTagIds();
+        Criterion tagExclusionCriterion = Criterion.not(TagData.ID.in(emergentTags));
+        if (tagId > 0)
+            tagExclusionCriterion = Criterion.and(tagExclusionCriterion, TagData.ID.neq(tagId));
 
         // TODO: For now, we'll modify the query to join and include the task rabbit and tag data here.
         // Eventually, we might consider restructuring things so that this query is constructed elsewhere.
@@ -913,7 +918,7 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
                                 Task.ID.eq(Field.field(TR_METADATA_JOIN + "." + Metadata.TASK.name)))).toString() //$NON-NLS-1$
 
                 + Join.left(TaskToTag.TABLE, Criterion.or(Task.ID.eq(TaskToTag.TASK_ID), Task.REMOTE_ID.eq(TaskToTag.TASK_REMOTEID))).toString()
-                + Join.left(TagData.TABLE, Criterion.and(Criterion.not(TagData.ID.in(emergentTags)),
+                + Join.left(TagData.TABLE, Criterion.and(tagExclusionCriterion,
                         Criterion.or(TagData.ID.eq(TaskToTag.TAG_ID), TagData.REMOTE_ID.eq(TaskToTag.TAG_REMOTEID)))).toString()
                 + filter.getSqlQuery();
 
