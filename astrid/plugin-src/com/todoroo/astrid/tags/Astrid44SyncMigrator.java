@@ -88,7 +88,7 @@ public class Astrid44SyncMigrator {
         // --------------
         // Finally, move all tag metadata to the new table
         // --------------
-        Query joinedTagData = Query.select(Metadata.TASK, TagService.TAG, TagData.REMOTE_ID)
+        Query joinedTagData = Query.select(Metadata.TASK, TagService.TAG, TagData.ID, TagData.REMOTE_ID)
                 .join(Join.left(TagData.TABLE,
                         Criterion.and(MetadataCriteria.withKey(TagService.KEY), TagService.TAG.eq(TagData.NAME))));
 
@@ -105,6 +105,7 @@ public class Astrid44SyncMigrator {
                     Log.w("tag-link-migrate", "LINK FROM TASK " + tag.getValue(Metadata.TASK) + " TO TAG " + tag.getValue(TagService.TAG));
 
                 link.setValue(TaskToTag.TASK_ID, tag.getValue(Metadata.TASK));
+                link.setValue(TaskToTag.TAG_ID, allTagLinks.get(TagData.ID));
                 link.setValue(TaskToTag.TAG_REMOTEID, allTagLinks.get(TagData.REMOTE_ID));
 
                 taskToTagDao.createNew(link);

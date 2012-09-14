@@ -248,7 +248,7 @@ public final class TagService {
         }
     }
 
-    public Long[] getEmergentTagIds() {
+    private Long[] getEmergentTagIds() {
         TodorooCursor<TagData> emergent = tagDataService.query(Query.select(TagData.ID)
                 .where(Functions.bitwiseAnd(TagData.FLAGS, TagData.FLAG_EMERGENT).gt(0)));
         try {
