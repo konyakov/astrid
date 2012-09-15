@@ -144,8 +144,8 @@ public final class TagService {
             return tag;
         }
 
-        private static final String TABLE_ALIAS = "taglinks";
-
+        private static final String LINK_TABLE_ALIAS = "taglinks";
+        private static final String TAG_TABLE_ALIAS = "tagTableAlias";
         /**
          * Return SQL selector query for getting tasks with a given tagData
          *
@@ -153,12 +153,26 @@ public final class TagService {
          * @return
          */
         public QueryTemplate queryTemplate(Criterion criterion) {
-            String prefix = TABLE_ALIAS + ".";
-            return new QueryTemplate().join(Join.inner(TaskToTag.TABLE.as(TABLE_ALIAS),
-                    Criterion.and(
-                            Criterion.or(Task.ID.eq(Field.field(prefix + TaskToTag.TASK_ID.name)), Task.REMOTE_ID.eq(Field.field(prefix + TaskToTag.TASK_REMOTEID.name))),
-                            Criterion.or(Field.field(prefix + TaskToTag.TAG_ID.name).eq(id), Field.field(prefix + TaskToTag.TAG_REMOTEID.name).eq(remoteId)))))
-                            .where(criterion);
+            String linkPrefix = LINK_TABLE_ALIAS + ".";
+            String tagPrefix = TAG_TABLE_ALIAS + ".";
+
+            Field tagIdField = Field.field(tagPrefix + TagData.ID.name);
+            Field tagRemoteIdField = Field.field(tagPrefix + TagData.REMOTE_ID.name);
+
+            return new QueryTemplate()
+                .join(
+                    Join.inner(TaskToTag.TABLE.as(LINK_TABLE_ALIAS),
+                            Criterion.or(
+                                    Task.ID.eq(Field.field(linkPrefix + TaskToTag.TASK_ID.name)),
+                                    Task.REMOTE_ID.eq(Field.field(linkPrefix + TaskToTag.TASK_REMOTEID)))))
+                .join(
+                    Join.inner(TagData.TABLE.as(TAG_TABLE_ALIAS),
+                            Criterion.or(
+                                    Field.field(linkPrefix + TaskToTag.TAG_ID.name).eq(tagIdField),
+                                    Field.field(linkPrefix + TaskToTag.TAG_REMOTEID.name).eq(tagRemoteIdField))))
+                .where(Criterion.and(
+                        Criterion.or(tagIdField.eq(id), tagRemoteIdField.eq(remoteId)),
+                        criterion));
         }
 
     }
