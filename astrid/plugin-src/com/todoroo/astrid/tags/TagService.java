@@ -38,6 +38,7 @@ import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.dao.MetadataDao;
 import com.todoroo.astrid.dao.MetadataDao.MetadataCriteria;
 import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
+import com.todoroo.astrid.dao.TaskToTagDao;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.TagData;
 import com.todoroo.astrid.data.Task;
@@ -90,11 +91,17 @@ public final class TagService {
 
     // --- implementation details
 
-    @Autowired MetadataDao metadataDao;
+    @Autowired
+    private MetadataDao metadataDao;
 
-    @Autowired TaskService taskService;
+    @Autowired
+    private TaskService taskService;
 
-    @Autowired TagDataService tagDataService;
+    @Autowired
+    private TagDataService tagDataService;
+
+    @Autowired
+    private TaskToTagDao taskToTagDao;
 
     public TagService() {
         DependencyInjectionService.getInstance().inject(this);
@@ -349,6 +356,29 @@ public final class TagService {
         tagDeleted.putExtra(TOKEN_TAG_SQL, sql);
         context.sendBroadcast(tagDeleted);
         return true;
+    }
+
+    public void linkTaskToTag(Task task, String tag) {
+        TodorooCursor<TagData> existing = tagDataService.query(Query.select(TagData.ID, TagData.REMOTE_ID).where(TagData.NAME.eqCaseInsensitive(tag)));
+        try {
+            TagData tagData;
+            if (existing.getCount() > 0) {
+                tagData = new TagData(existing);
+            } else {
+                tagData = new TagData();
+                tagData.setValue(TagData.NAME, tag);
+                tagDataService.save(tagData);
+            }
+
+            TaskToTag link = new TaskToTag();
+            link.setValue(TaskToTag.TASK_ID, task.getId());
+            link.setValue(TaskToTag.TASK_REMOTEID, task.getValue(Task.REMOTE_ID));
+            link.setValue(TaskToTag.TAG_ID, tagData.getId());
+            link.setValue(TaskToTag.TAG_REMOTEID, tagData.getValue(TagData.REMOTE_ID));
+            taskToTagDao.createNew(link);
+        } finally {
+            existing.close();
+        }
     }
 
     /**

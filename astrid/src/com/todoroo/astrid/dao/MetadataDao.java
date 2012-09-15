@@ -16,14 +16,9 @@ import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Join;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.DateUtilities;
-import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.provider.Astrid2TaskProvider;
-import com.todoroo.astrid.service.StatisticsConstants;
-import com.todoroo.astrid.service.StatisticsService;
-import com.todoroo.astrid.tags.TagService;
-import com.todoroo.astrid.utility.AstridPreferences;
 
 /**
  * Data Access layer for {@link Metadata}-related operations.
@@ -73,13 +68,6 @@ public class MetadataDao extends DatabaseDao<Metadata> {
             item.setValue(Metadata.CREATION_DATE, DateUtilities.now());
 
         boolean state = super.persist(item);
-        if(Preferences.getBoolean(AstridPreferences.P_FIRST_LIST, true)) {
-            if (state && item.containsNonNullValue(Metadata.KEY) &&
-                    item.getValue(Metadata.KEY).equals(TagService.KEY)) {
-                StatisticsService.reportEvent(StatisticsConstants.USER_FIRST_LIST);
-                Preferences.setBoolean(AstridPreferences.P_FIRST_LIST, false);
-            }
-        }
         Astrid2TaskProvider.notifyDatabaseModification();
         return state;
     }

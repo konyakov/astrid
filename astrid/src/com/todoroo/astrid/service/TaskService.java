@@ -74,6 +74,9 @@ public class TaskService {
     private MetadataDao metadataDao;
 
     @Autowired
+    private TagService tagService;
+
+    @Autowired
     private TaskToTagDao taskToTagDao;
 
     public TaskService() {
@@ -432,12 +435,8 @@ public class TaskService {
     private void quickAdd(Task task, List<String> tags) {
         save(task);
 
-        Metadata metadata = new Metadata();
         for(String tag : tags) {
-            metadata.setValue(Metadata.KEY, TagService.KEY);
-            metadata.setValue(Metadata.TASK, task.getId());
-            metadata.setValue(TagService.TAG, tag);
-            metadataDao.createNew(metadata);
+            tagService.linkTaskToTag(task, tag);
         }
     }
 
