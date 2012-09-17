@@ -297,7 +297,7 @@ public final class TagService {
         }
         Query query = Query.select(properties)
                 .join(Join.inner(TaskToTag.TABLE, Criterion.or(TaskToTag.TAG_ID.eq(TagData.ID), TaskToTag.TAG_REMOTEID.eq(TagData.REMOTE_ID))))
-                .where(Criterion.and(TaskToTag.TASK_ID.eq(taskId), criterion));
+                .where(Criterion.and(TaskToTag.TASK_ID.eq(taskId), Criterion.not(TaskToTag.DELETED_AT.gt(0)), criterion));
 
         return tagDataService.query(query);
     }

@@ -906,7 +906,7 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
             tagId = getActiveTagData().getId();
 
         Long[] emergentTags = TagService.getInstance().getEmergentTagIds();
-        Criterion tagExclusionCriterion = Criterion.not(TagData.ID.in(emergentTags));
+        Criterion tagExclusionCriterion = Criterion.and(Criterion.not(TaskToTag.DELETED_AT.gt(0)), Criterion.not(TagData.ID.in(emergentTags)));
         if (tagId > 0)
             tagExclusionCriterion = Criterion.and(tagExclusionCriterion, TagData.ID.neq(tagId));
 
