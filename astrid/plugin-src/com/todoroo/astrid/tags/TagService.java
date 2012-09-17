@@ -417,7 +417,8 @@ public final class TagService {
      */
     public boolean synchronizeTags(long taskUuid, Set<String> tags) {
         HashSet<Long> existingLinks = new HashSet<Long>();
-        TodorooCursor<TaskToTag> links = taskToTagDao.query(Query.select(TaskToTag.PROPERTIES).where(TaskToTag.TASK_REMOTEID.eq(taskUuid)));
+        TodorooCursor<TaskToTag> links = taskToTagDao.query(Query.select(TaskToTag.PROPERTIES)
+                .where(Criterion.and(TaskToTag.TASK_REMOTEID.eq(taskUuid), Criterion.not(TaskToTag.DELETED_AT.gt(0)))));
         try {
             for (links.moveToFirst(); !links.isAfterLast(); links.moveToNext()) {
                 TaskToTag link = new TaskToTag(links);

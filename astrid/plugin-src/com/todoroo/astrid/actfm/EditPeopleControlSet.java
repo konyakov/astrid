@@ -245,7 +245,10 @@ public class EditPeopleControlSet extends PopupControlSet {
                 @Override
                 public void run() {
                     ArrayList<JSONObject> collaborators = new ArrayList<JSONObject>();
-                    TodorooCursor<TagData> tags = TagService.getInstance().getTags(task.getValue(Task.REMOTE_ID), true,
+                    long remoteId = 0;
+                    if (task.containsValue(Task.REMOTE_ID))
+                        remoteId = task.getValue(Task.REMOTE_ID);
+                    TodorooCursor<TagData> tags = TagService.getInstance().getTags(remoteId, true,
                             TagData.NAME, TagData.MEMBER_COUNT, TagData.MEMBERS, TagData.USER);
                     try {
                         TagData tagData = new TagData();
