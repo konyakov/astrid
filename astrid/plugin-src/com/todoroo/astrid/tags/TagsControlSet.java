@@ -29,7 +29,7 @@ import com.todoroo.andlib.data.AbstractModel;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.utility.DateUtilities;
-import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.TagData;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.tags.TagService.Tag;
 import com.todoroo.astrid.ui.PopupControlSet;
@@ -228,11 +228,11 @@ public final class TagsControlSet extends PopupControlSet {
     public void readFromTask(Task task) {
         super.readFromTask(task);
         if(model.getId() != AbstractModel.NO_ID) {
-            TodorooCursor<Metadata> cursor = tagService.getTags(model.getId(), false);
+            TodorooCursor<TagData> cursor = tagService.getTags(model.getId(), false, TagData.NAME);
             LinkedHashSet<String> tags = new LinkedHashSet<String>(cursor.getCount());
             try {
                 for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                    String tag = cursor.get(TagService.TAG);
+                    String tag = cursor.get(TagData.NAME);
                     tags.add(tag);
                 }
             } finally {

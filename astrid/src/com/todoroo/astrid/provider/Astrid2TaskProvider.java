@@ -23,11 +23,11 @@ import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.sql.Criterion;
+import com.todoroo.andlib.sql.Order;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.core.SortHelper;
 import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
-import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.service.AstridDependencyInjector;
 import com.todoroo.astrid.service.StatisticsConstants;
@@ -48,6 +48,11 @@ import com.todoroo.astrid.tags.TagService.Tag;
  */
 @SuppressWarnings("nls")
 public class Astrid2TaskProvider extends ContentProvider {
+
+    /**
+     * Property for retrieving count of aggregated rows
+     */
+    private static final Order GROUPED_TAGS_BY_SIZE = Order.desc(TagService.COUNT);
 
     static {
         AstridDependencyInjector.initialize();
@@ -142,7 +147,7 @@ public class Astrid2TaskProvider extends ContentProvider {
 	 */
 	public Cursor getTags() {
 
-		Tag[] tags = TagService.getInstance().getGroupedTags(TagService.GROUPED_TAGS_BY_SIZE,
+		Tag[] tags = TagService.getInstance().getGroupedTags(GROUPED_TAGS_BY_SIZE,
 		        Criterion.all, true);
 
 		MatrixCursor ret = new MatrixCursor(TAGS_FIELD_LIST);
@@ -199,14 +204,7 @@ public class Astrid2TaskProvider extends ContentProvider {
     			cursor.moveToNext();
     			task.readFromCursor(cursor);
 
-    			StringBuilder taskTags = new StringBuilder();
-    			TodorooCursor<Metadata> tagCursor = TagService.getInstance().getTags(task.getId(), true);
-    			try {
-    			    for(tagCursor.moveToFirst(); !tagCursor.isAfterLast(); tagCursor.moveToNext())
-    			        taskTags.append(tagCursor.get(TagService.TAG)).append(TAG_SEPARATOR);
-    			} finally {
-    			    tagCursor.close();
-    			}
+    			String taskTags = TagService.getInstance().getTagsAsString(task.getId(), TAG_SEPARATOR, true);
 
     			Object[] values = new Object[7];
     			values[0] = task.getValue(Task.TITLE);
@@ -215,7 +213,7 @@ public class Astrid2TaskProvider extends ContentProvider {
     			values[3] = task.getValue(Task.DUE_DATE);
     			values[4] = task.getValue(Task.IMPORTANCE);
     			values[5] = task.getId();
-    			values[6] = taskTags.toString();
+    			values[6] = taskTags;
 
     			ret.addRow(values);
     		}

@@ -54,7 +54,7 @@ public class UUIDHelper {
         return Pair.create(uuid, proofText);
     }
 
-    private static final String SALT = "$2a$10$2RHhxhKaPb4VXlQUJyBU/O"; //$NON-NLS-1$
+    private static final String SALT = "$2a$07$H9Uvup7xEnA9qMtA0L53ZO"; //$NON-NLS-1$
     private static final String BASE_64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789./"; //$NON-NLS-1$
 
 

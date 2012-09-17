@@ -7,6 +7,7 @@ import com.todoroo.andlib.data.AbstractModel;
 import com.todoroo.andlib.data.Property;
 import com.todoroo.andlib.data.Property.LongProperty;
 import com.todoroo.andlib.data.Table;
+import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.astrid.api.AstridApiConstants;
 
 @SuppressWarnings("nls")
@@ -52,6 +53,15 @@ public class TaskToTag extends AbstractModel {
     static {
         defaultValues.put(DELETED_AT.name, 0L);
         defaultValues.put(PUSHED_AT.name, 0L);
+    }
+
+    public TaskToTag() {
+        super();
+    }
+
+    public TaskToTag(TodorooCursor<TaskToTag> cursor) {
+        this();
+        readPropertiesFromCursor(cursor);
     }
 
     @Override

@@ -7,7 +7,7 @@ package com.todoroo.astrid.tags;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Set;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.timsu.astrid.R;
+import com.todoroo.andlib.data.Property;
 import com.todoroo.andlib.data.Property.CountProperty;
 import com.todoroo.andlib.data.Property.LongProperty;
 import com.todoroo.andlib.data.Property.StringProperty;
@@ -69,6 +70,8 @@ public final class TagService {
     /** Property for astrid.com remote id */
     public static final LongProperty REMOTE_ID = new LongProperty(Metadata.TABLE, Metadata.VALUE2.name);
 
+    public static final CountProperty COUNT = new CountProperty();
+
     // --- singleton
 
     private static TagService instance = null;
@@ -103,13 +106,6 @@ public final class TagService {
     public TagService() {
         DependencyInjectionService.getInstance().inject(this);
     }
-
-    /**
-     * Property for retrieving count of aggregated rows
-     */
-    private static final CountProperty COUNT = new CountProperty();
-    public static final Order GROUPED_TAGS_BY_ALPHA = Order.asc(Functions.upper(TAG));
-    public static final Order GROUPED_TAGS_BY_SIZE = Order.desc(COUNT);
 
     /**
      * Helper class for returning a tag/task count pair
@@ -289,16 +285,18 @@ public final class TagService {
      * @param taskId
      * @return cursor. PLEASE CLOSE THE CURSOR!
      */
-    public TodorooCursor<Metadata> getTags(long taskId, boolean includeEmergent) {
+    public TodorooCursor<TagData> getTags(long taskId, boolean includeEmergent, Property<?>... properties) {
         Criterion criterion;
-        if (includeEmergent)
-            criterion = Criterion.and(MetadataCriteria.withKey(KEY),
-                    MetadataCriteria.byTask(taskId));
-        else
-            criterion = Criterion.and(MetadataCriteria.withKey(KEY),
-                    MetadataCriteria.byTask(taskId), Criterion.not(TAG.in(getEmergentTags())));
-        Query query = Query.select(TAG, REMOTE_ID).where(criterion).orderBy(Order.asc(Functions.upper(TAG)));
-        return metadataDao.query(query);
+        if (includeEmergent) {
+            criterion = Criterion.all;
+        } else {
+            criterion = Criterion.not(TagData.ID.in(getEmergentTagIds()));
+        }
+        Query query = Query.select(properties)
+                .join(Join.inner(TaskToTag.TABLE, Criterion.or(TaskToTag.TAG_ID.eq(TagData.ID), TaskToTag.TAG_REMOTEID.eq(TagData.REMOTE_ID))))
+                .where(Criterion.and(TaskToTag.TASK_ID.eq(taskId), criterion));
+
+        return tagDataService.query(query);
     }
 
     /**
@@ -317,16 +315,16 @@ public final class TagService {
      * @param taskId
      * @return empty string if no tags, otherwise string
      */
-    protected String getTagsAsString(long taskId, String separator, boolean includeEmergent) {
+    public String getTagsAsString(long taskId, String separator, boolean includeEmergent) {
         StringBuilder tagBuilder = new StringBuilder();
-        TodorooCursor<Metadata> tags = getTags(taskId, includeEmergent);
+        TodorooCursor<TagData> tags = getTags(taskId, includeEmergent, TagData.NAME);
         try {
             int length = tags.getCount();
-            Metadata metadata = new Metadata();
+            TagData tag = new TagData();
             for (int i = 0; i < length; i++) {
                 tags.moveToNext();
-                metadata.readFromCursor(tags);
-                tagBuilder.append(metadata.getValue(TAG));
+                tag.readFromCursor(tags);
+                tagBuilder.append(tag.getValue(TagData.NAME));
                 if (i < length - 1)
                     tagBuilder.append(separator);
             }
@@ -424,27 +422,42 @@ public final class TagService {
      * @param taskId
      * @param tags
      */
-    public boolean synchronizeTags(long taskId, LinkedHashSet<String> tags) {
-        MetadataService service = PluginServices.getMetadataService();
-
-        HashSet<String> addedTags = new HashSet<String>();
-        ArrayList<Metadata> metadata = new ArrayList<Metadata>();
-        for(String tag : tags) {
-            String tagWithCase = getTagWithCase(tag); // Find if any tag exists that matches with case ignore
-            if (addedTags.contains(tagWithCase)) // Prevent two identical tags from being added twice (e.g. don't add "Tag, tag" as "tag, tag")
-                continue;
-            addedTags.add(tagWithCase);
-            Metadata item = new Metadata();
-            item.setValue(Metadata.KEY, KEY);
-            item.setValue(TAG, tagWithCase);
-            TagData tagData = tagDataService.getTag(tagWithCase, TagData.REMOTE_ID);
-            if(tagData != null)
-                item.setValue(REMOTE_ID, tagData.getValue(TagData.REMOTE_ID));
-
-            metadata.add(item);
+    public boolean synchronizeTags(long taskId, Set<String> tags) {
+        HashSet<Long> existingLinks = new HashSet<Long>();
+        TodorooCursor<TaskToTag> links = taskToTagDao.query(Query.select(TaskToTag.PROPERTIES).where(TaskToTag.TASK_ID.eq(taskId)));
+        try {
+            for (links.moveToFirst(); !links.isAfterLast(); links.moveToNext()) {
+                TaskToTag link = new TaskToTag(links);
+                existingLinks.add(link.getValue(TaskToTag.TAG_REMOTEID));
+            }
+        } finally {
+            links.close();
         }
 
-        return service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(KEY));
+        for (String tag : tags) {
+            TagData tagData = getTagDataWithCase(tag, TagData.NAME, TagData.REMOTE_ID);
+            if (tagData == null) {
+                tagData = new TagData();
+                tagData.setValue(TagData.NAME, tag);
+                tagDataService.save(tagData);
+            }
+            if (existingLinks.contains(tagData.getValue(TagData.REMOTE_ID))) {
+                existingLinks.remove(tagData.getValue(TagData.REMOTE_ID));
+            } else {
+                TaskToTag newLink = new TaskToTag();
+                newLink.setValue(TaskToTag.TASK_ID, taskId);
+                newLink.setValue(TaskToTag.TAG_REMOTEID, tagData.getValue(TagData.REMOTE_ID));
+                taskToTagDao.createNew(newLink);
+            }
+        }
+
+        // Mark as deleted links that don't exist anymore
+        TaskToTag deletedLinkTemplate = new TaskToTag();
+        deletedLinkTemplate.setValue(TaskToTag.DELETED_AT, DateUtilities.now());
+        taskToTagDao.update(Criterion.and(TaskToTag.TASK_ID.eq(taskId),
+                TaskToTag.TAG_REMOTEID.in(existingLinks.toArray(new Long[existingLinks.size()]))), deletedLinkTemplate);
+
+        return true;
     }
 
     /**
@@ -466,6 +479,19 @@ public final class TagService {
             tagData.close();
         }
         return tagWithCase;
+    }
+
+    public TagData getTagDataWithCase(String tag, Property<?>... properties) {
+        TodorooCursor<TagData> tagData = tagDataService.query(Query.select(properties).where(TagData.NAME.eqCaseInsensitive(tag)));
+        try {
+            if (tagData.getCount() > 0) {
+                tagData.moveToFirst();
+                return new TagData(tagData);
+            }
+        } finally {
+            tagData.close();
+        }
+        return null;
     }
 
     public int deleteTagMetadata(String tag) {

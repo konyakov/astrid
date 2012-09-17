@@ -439,22 +439,22 @@ public final class ActFmSyncService {
         }
 
         if(Flags.checkAndClear(Flags.TAGS_CHANGED) || newlyCreated) {
-            TodorooCursor<Metadata> cursor = TagService.getInstance().getTags(task.getId(), false);
+            TodorooCursor<TagData> cursor = TagService.getInstance().getTags(task.getId(), false, TagData.NAME, TagData.REMOTE_ID);
             try {
                 if(cursor.getCount() == 0) {
                     params.add("tags");
                     params.add("");
                 } else {
-                    Metadata metadata = new Metadata();
+                    TagData tagData = new TagData();
                     for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                        metadata.readFromCursor(cursor);
-                        if(metadata.containsNonNullValue(TagService.REMOTE_ID) &&
-                                metadata.getValue(TagService.REMOTE_ID) > 0) {
+                        tagData.readFromCursor(cursor);
+                        if(tagData.containsNonNullValue(TagData.REMOTE_ID) &&
+                                tagData.getValue(TagData.REMOTE_ID) > 0) {
                             params.add("tag_ids[]");
-                            params.add(metadata.getValue(TagService.REMOTE_ID));
+                            params.add(tagData.getValue(TagData.REMOTE_ID));
                         } else {
                             params.add("tags[]");
-                            params.add(metadata.getValue(TagService.TAG));
+                            params.add(tagData.getValue(TagData.NAME));
                         }
                     }
                 }

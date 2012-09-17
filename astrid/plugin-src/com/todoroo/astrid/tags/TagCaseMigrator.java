@@ -13,7 +13,9 @@ import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.sql.Criterion;
+import com.todoroo.andlib.sql.Functions;
 import com.todoroo.andlib.sql.Join;
+import com.todoroo.andlib.sql.Order;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.data.Metadata;
@@ -31,6 +33,8 @@ public class TagCaseMigrator {
 
     public static final String PREF_SHOW_MIGRATION_ALERT = "tag_case_migration_alert"; //$NON-NLS-1$
     private static final String PREF_CASE_MIGRATION_PERFORMED = "tag_case_migration"; //$NON-NLS-1$
+    public static final Order GROUPED_TAGS_BY_ALPHA = Order.asc(Functions.upper(TagService.TAG));
+
 
     public TagCaseMigrator() {
         DependencyInjectionService.getInstance().inject(this);
@@ -44,7 +48,7 @@ public class TagCaseMigrator {
     public void performTagCaseMigration(@SuppressWarnings("unused") Context context) {
         if (!Preferences.getBoolean(PREF_CASE_MIGRATION_PERFORMED, false)) {
             TagService.Tag[] allTagData = TagService.getInstance().getGroupedTags(
-                    TagService.GROUPED_TAGS_BY_ALPHA, Criterion.all, false);
+                    GROUPED_TAGS_BY_ALPHA, Criterion.all, false);
 
             boolean shouldShowDialog = false;
             for (int i = 0; i < allTagData.length - 1; i++) {
