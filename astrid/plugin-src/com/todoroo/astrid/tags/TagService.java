@@ -167,30 +167,22 @@ public final class TagService {
         return new QueryTemplate()
             .join(
                 Join.inner(TaskToTag.TABLE.as(LINK_TABLE_ALIAS),
-                        Criterion.or(
-                                Task.ID.eq(Field.field(LINK_PREFIX + TaskToTag.TASK_ID.name)),
-                                Task.REMOTE_ID.eq(Field.field(LINK_PREFIX + TaskToTag.TASK_REMOTEID.name)))))
+                                Task.REMOTE_ID.eq(Field.field(LINK_PREFIX + TaskToTag.TASK_REMOTEID.name))))
             .join(
                 Join.inner(TagData.TABLE.as(TAG_TABLE_ALIAS),
-                        Criterion.or(
-                                Field.field(LINK_PREFIX + TaskToTag.TAG_ID.name).eq(TAG_ID_FIELD),
-                                Field.field(LINK_PREFIX + TaskToTag.TAG_REMOTEID.name).eq(TAG_REMOTE_ID_FIELD))))
+                                Field.field(LINK_PREFIX + TaskToTag.TAG_REMOTEID.name).eq(TAG_REMOTE_ID_FIELD)))
             .where(Criterion.and(
                     Criterion.not(Field.field(LINK_PREFIX + TaskToTag.DELETED_AT.name).gt(0)),
                     criterion));
     }
 
-    public static Criterion memberOfTagData(long tagDataId, long tagDataRemoteId) {
+    public static Criterion memberOfTagData(long tagDataUuid) {
         Criterion criterion = Criterion.none;
-        if (tagDataId > 0 && tagDataRemoteId > 0) {
-            criterion = Criterion.or(TaskToTag.TAG_ID.eq(tagDataId), TaskToTag.TAG_REMOTEID.eq(tagDataRemoteId));
-        } else if (tagDataId > 0) {
-            criterion = TaskToTag.TAG_ID.eq(tagDataId);
-        } else if (tagDataRemoteId > 0) {
-            criterion = TaskToTag.TAG_REMOTEID.eq(tagDataRemoteId);
+        if (tagDataUuid > 0) {
+            criterion = TaskToTag.TAG_REMOTEID.eq(tagDataUuid);
         }
 
-        return Task.ID.in(Query.select(TaskToTag.TASK_ID).from(TaskToTag.TABLE).where(criterion));
+        return Task.REMOTE_ID.in(Query.select(TaskToTag.TASK_REMOTEID).from(TaskToTag.TABLE).where(criterion));
     }
 
     @Deprecated
@@ -208,10 +200,10 @@ public final class TagService {
     }
 
     public QueryTemplate untaggedTemplate() {
-        Long[] emergentTagIds = getEmergentTagIds();
+        Long[] emergentTagIds = getEmergentTagUuids();
 
         return new QueryTemplate().where(Criterion.and(
-                Criterion.not(Task.ID.in(Query.select(TaskToTag.TASK_ID).from(TaskToTag.TABLE).where(Criterion.not(TaskToTag.TAG_ID.in(emergentTagIds))))),
+                Criterion.not(Task.REMOTE_ID.in(Query.select(TaskToTag.TASK_REMOTEID).from(TaskToTag.TABLE).where(Criterion.not(TaskToTag.TAG_REMOTEID.in(emergentTagIds))))),
                 TaskCriteria.isActive(),
                 TaskApiDao.TaskCriteria.ownedByMe(),
                 TaskCriteria.isVisible()));
@@ -265,8 +257,8 @@ public final class TagService {
         }
     }
 
-    public Long[] getEmergentTagIds() {
-        TodorooCursor<TagData> emergent = tagDataService.query(Query.select(TagData.ID)
+    public Long[] getEmergentTagUuids() {
+        TodorooCursor<TagData> emergent = tagDataService.query(Query.select(TagData.REMOTE_ID)
                 .where(Functions.bitwiseAnd(TagData.FLAGS, TagData.FLAG_EMERGENT).gt(0)));
         try {
             Long[] tags = new Long[emergent.getCount()];
@@ -274,7 +266,7 @@ public final class TagService {
             for (int i = 0; i < emergent.getCount(); i++) {
                 emergent.moveToPosition(i);
                 data.readFromCursor(emergent);
-                tags[i] = data.getId();
+                tags[i] = data.getValue(TagData.REMOTE_ID);
             }
             return tags;
         } finally {
@@ -288,16 +280,16 @@ public final class TagService {
      * @param taskId
      * @return cursor. PLEASE CLOSE THE CURSOR!
      */
-    public TodorooCursor<TagData> getTags(long taskId, boolean includeEmergent, Property<?>... properties) {
+    public TodorooCursor<TagData> getTags(long taskUuid, boolean includeEmergent, Property<?>... properties) {
         Criterion criterion;
         if (includeEmergent) {
             criterion = Criterion.all;
         } else {
-            criterion = Criterion.not(TagData.ID.in(getEmergentTagIds()));
+            criterion = Criterion.not(TagData.REMOTE_ID.in(getEmergentTagUuids()));
         }
         Query query = Query.select(properties)
-                .join(Join.inner(TaskToTag.TABLE, Criterion.or(TaskToTag.TAG_ID.eq(TagData.ID), TaskToTag.TAG_REMOTEID.eq(TagData.REMOTE_ID))))
-                .where(Criterion.and(TaskToTag.TASK_ID.eq(taskId), Criterion.not(TaskToTag.DELETED_AT.gt(0)), criterion));
+                .join(Join.inner(TaskToTag.TABLE, TaskToTag.TAG_REMOTEID.eq(TagData.REMOTE_ID)))
+                .where(Criterion.and(TaskToTag.TASK_REMOTEID.eq(taskUuid), Criterion.not(TaskToTag.DELETED_AT.gt(0)), criterion));
 
         return tagDataService.query(query);
     }
@@ -308,8 +300,8 @@ public final class TagService {
      * @param taskId
      * @return empty string if no tags, otherwise string
      */
-    public String getTagsAsString(long taskId, boolean includeEmergent) {
-        return getTagsAsString(taskId, ", ", includeEmergent);
+    public String getTagsAsString(long taskUuid, boolean includeEmergent) {
+        return getTagsAsString(taskUuid, ", ", includeEmergent);
     }
 
     /**
@@ -318,9 +310,9 @@ public final class TagService {
      * @param taskId
      * @return empty string if no tags, otherwise string
      */
-    public String getTagsAsString(long taskId, String separator, boolean includeEmergent) {
+    public String getTagsAsString(long taskUuid, String separator, boolean includeEmergent) {
         StringBuilder tagBuilder = new StringBuilder();
-        TodorooCursor<TagData> tags = getTags(taskId, includeEmergent, TagData.NAME);
+        TodorooCursor<TagData> tags = getTags(taskUuid, includeEmergent, TagData.NAME);
         try {
             int length = tags.getCount();
             TagData tag = new TagData();
@@ -369,9 +361,7 @@ public final class TagService {
             }
 
             TaskToTag link = new TaskToTag();
-            link.setValue(TaskToTag.TASK_ID, task.getId());
             link.setValue(TaskToTag.TASK_REMOTEID, task.getValue(Task.REMOTE_ID));
-            link.setValue(TaskToTag.TAG_ID, tagData.getId());
             link.setValue(TaskToTag.TAG_REMOTEID, tagData.getValue(TagData.REMOTE_ID));
             taskToTagDao.createNew(link);
         } finally {
@@ -425,9 +415,9 @@ public final class TagService {
      * @param taskId
      * @param tags
      */
-    public boolean synchronizeTags(long taskId, Set<String> tags) {
+    public boolean synchronizeTags(long taskUuid, Set<String> tags) {
         HashSet<Long> existingLinks = new HashSet<Long>();
-        TodorooCursor<TaskToTag> links = taskToTagDao.query(Query.select(TaskToTag.PROPERTIES).where(TaskToTag.TASK_ID.eq(taskId)));
+        TodorooCursor<TaskToTag> links = taskToTagDao.query(Query.select(TaskToTag.PROPERTIES).where(TaskToTag.TASK_REMOTEID.eq(taskUuid)));
         try {
             for (links.moveToFirst(); !links.isAfterLast(); links.moveToNext()) {
                 TaskToTag link = new TaskToTag(links);
@@ -448,7 +438,7 @@ public final class TagService {
                 existingLinks.remove(tagData.getValue(TagData.REMOTE_ID));
             } else {
                 TaskToTag newLink = new TaskToTag();
-                newLink.setValue(TaskToTag.TASK_ID, taskId);
+                newLink.setValue(TaskToTag.TASK_REMOTEID, taskUuid);
                 newLink.setValue(TaskToTag.TAG_REMOTEID, tagData.getValue(TagData.REMOTE_ID));
                 taskToTagDao.createNew(newLink);
             }
@@ -457,7 +447,7 @@ public final class TagService {
         // Mark as deleted links that don't exist anymore
         TaskToTag deletedLinkTemplate = new TaskToTag();
         deletedLinkTemplate.setValue(TaskToTag.DELETED_AT, DateUtilities.now());
-        taskToTagDao.update(Criterion.and(TaskToTag.TASK_ID.eq(taskId),
+        taskToTagDao.update(Criterion.and(TaskToTag.TASK_REMOTEID.eq(taskUuid),
                 TaskToTag.TAG_REMOTEID.in(existingLinks.toArray(new Long[existingLinks.size()]))), deletedLinkTemplate);
 
         return true;

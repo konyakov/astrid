@@ -98,14 +98,15 @@ public class Astrid44SyncMigrator {
             for (allTagLinks.moveToFirst(); !allTagLinks.isAfterLast(); allTagLinks.moveToNext()) {
                 tag.readFromCursor(allTagLinks);
 
+                Task task = taskDao.fetch(tag.getValue(Metadata.TASK), Task.REMOTE_ID);
+
                 // Create new tag links
                 TaskToTag link = new TaskToTag();
 
                 if (Constants.DEBUG)
                     Log.w("tag-link-migrate", "LINK FROM TASK " + tag.getValue(Metadata.TASK) + " TO TAG " + tag.getValue(TagService.TAG));
 
-                link.setValue(TaskToTag.TASK_ID, tag.getValue(Metadata.TASK));
-                link.setValue(TaskToTag.TAG_ID, allTagLinks.get(TagData.ID));
+                link.setValue(TaskToTag.TASK_REMOTEID, task.getValue(Task.REMOTE_ID));
                 link.setValue(TaskToTag.TAG_REMOTEID, allTagLinks.get(TagData.REMOTE_ID));
 
                 taskToTagDao.createNew(link);

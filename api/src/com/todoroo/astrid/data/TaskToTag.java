@@ -26,14 +26,8 @@ public class TaskToTag extends AbstractModel {
     public static final LongProperty ID = new LongProperty(
             TABLE, ID_PROPERTY_NAME);
 
-    public static final LongProperty TASK_ID = new LongProperty(
-            TABLE, "taskId");
-
     public static final LongProperty TASK_REMOTEID= new LongProperty(
             TABLE, "taskUuid");
-
-    public static final LongProperty TAG_ID = new LongProperty(
-            TABLE, "tagId");
 
     public static final LongProperty TAG_REMOTEID = new LongProperty(
             TABLE, "tagUuid");

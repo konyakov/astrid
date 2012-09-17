@@ -193,7 +193,7 @@ public class Astrid2TaskProvider extends ContentProvider {
 
 		MatrixCursor ret = new MatrixCursor(TASK_FIELD_LIST);
 
-		TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.TITLE,
+		TodorooCursor<Task> cursor = taskService.query(Query.select(Task.ID, Task.REMOTE_ID, Task.TITLE,
 		        Task.IMPORTANCE, Task.DUE_DATE).where(Criterion.and(TaskCriteria.isActive(),
                         TaskCriteria.isVisible())).
 		        orderBy(SortHelper.defaultTaskOrder()).limit(MAX_NUMBER_OF_TASKS));
@@ -204,7 +204,7 @@ public class Astrid2TaskProvider extends ContentProvider {
     			cursor.moveToNext();
     			task.readFromCursor(cursor);
 
-    			String taskTags = TagService.getInstance().getTagsAsString(task.getId(), TAG_SEPARATOR, true);
+    			String taskTags = TagService.getInstance().getTagsAsString(task.getValue(Task.REMOTE_ID), TAG_SEPARATOR, true);
 
     			Object[] values = new Object[7];
     			values[0] = task.getValue(Task.TITLE);

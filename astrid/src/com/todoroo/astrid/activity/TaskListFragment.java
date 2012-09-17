@@ -905,8 +905,8 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
         if (getActiveTagData() != null)
             tagId = getActiveTagData().getId();
 
-        Long[] emergentTags = TagService.getInstance().getEmergentTagIds();
-        Criterion tagExclusionCriterion = Criterion.and(Criterion.not(TaskToTag.DELETED_AT.gt(0)), Criterion.not(TagData.ID.in(emergentTags)));
+        Long[] emergentTags = TagService.getInstance().getEmergentTagUuids();
+        Criterion tagExclusionCriterion = Criterion.and(Criterion.not(TaskToTag.DELETED_AT.gt(0)), Criterion.not(TagData.REMOTE_ID.in(emergentTags)));
         if (tagId > 0)
             tagExclusionCriterion = Criterion.and(tagExclusionCriterion, TagData.ID.neq(tagId));
 
@@ -917,9 +917,9 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
                         Criterion.and(Field.field(TR_METADATA_JOIN + "." + Metadata.KEY.name).eq(TaskRabbitMetadata.METADATA_KEY), //$NON-NLS-1$
                                 Task.ID.eq(Field.field(TR_METADATA_JOIN + "." + Metadata.TASK.name)))).toString() //$NON-NLS-1$
 
-                + Join.left(TaskToTag.TABLE, Criterion.or(Task.ID.eq(TaskToTag.TASK_ID), Task.REMOTE_ID.eq(TaskToTag.TASK_REMOTEID))).toString()
+                + Join.left(TaskToTag.TABLE, Task.REMOTE_ID.eq(TaskToTag.TASK_REMOTEID)).toString()
                 + Join.left(TagData.TABLE, Criterion.and(tagExclusionCriterion,
-                        Criterion.or(TagData.ID.eq(TaskToTag.TAG_ID), TagData.REMOTE_ID.eq(TaskToTag.TAG_REMOTEID)))).toString()
+                        TagData.REMOTE_ID.eq(TaskToTag.TAG_REMOTEID))).toString()
                 + filter.getSqlQuery();
 
         sqlQueryTemplate.set(SortHelper.adjustQueryForFlagsAndSort(

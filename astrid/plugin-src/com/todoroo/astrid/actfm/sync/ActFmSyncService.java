@@ -440,7 +440,7 @@ public final class ActFmSyncService {
         }
 
         if(Flags.checkAndClear(Flags.TAGS_CHANGED) || newlyCreated) {
-            TodorooCursor<TagData> cursor = TagService.getInstance().getTags(task.getId(), false, TagData.NAME, TagData.REMOTE_ID);
+            TodorooCursor<TagData> cursor = TagService.getInstance().getTags(remoteId, false, TagData.NAME, TagData.REMOTE_ID);
             try {
                 if(cursor.getCount() == 0) {
                     params.add("tags");
@@ -818,7 +818,7 @@ public final class ActFmSyncService {
         JsonHelper.taskFromJson(result, task, tags);
         task.putTransitory(SyncFlags.ACTFM_SUPPRESS_SYNC, true);
         taskService.save(task);
-        tagService.synchronizeTags(task.getId(), tags);
+        tagService.synchronizeTags(task.getValue(Task.REMOTE_ID), tags);
         synchronizeAttachments(result, task);
     }
 
@@ -912,7 +912,7 @@ public final class ActFmSyncService {
             @Override
             protected void deleteExtras(Long[] localIds) {
                 taskService.deleteWhere(Criterion.and(
-                        TagService.memberOfTagData(tagData.getId(), tagData.getValue(TagData.REMOTE_ID)),
+                        TagService.memberOfTagData(tagData.getValue(TagData.REMOTE_ID)),
                         TaskCriteria.activeAndVisible(),
                         Task.REMOTE_ID.isNotNull(),
                         Criterion.not(Task.ID.in(localIds))));
@@ -1253,7 +1253,7 @@ public final class ActFmSyncService {
                 }
 
                 ids.add(remote.getId());
-                tagService.synchronizeTags(remote.getId(), tags);
+                tagService.synchronizeTags(remote.getValue(Task.REMOTE_ID), tags);
                 synchronizeAttachments(item, remote);
                 remote.clear();
             }

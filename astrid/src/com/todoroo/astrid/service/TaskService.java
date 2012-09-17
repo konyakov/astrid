@@ -197,7 +197,7 @@ public class TaskService {
         return newTask;
     }
 
-    public Task cloneReusableTask(Task task, long tagId) {
+    public Task cloneReusableTask(Task task, long tagUuid) {
         Task newTask = fetchById(task.getId(), Task.PROPERTIES);
         if (newTask == null)
             return new Task();
@@ -208,10 +208,10 @@ public class TaskService {
 
         taskDao.save(newTask);
 
-        if (tagId > 0) {
+        if (tagUuid > 0) {
             TaskToTag link = new TaskToTag();
-            link.setValue(TaskToTag.ID, newTask.getId());
-            link.setValue(TaskToTag.TAG_ID, tagId);
+            link.setValue(TaskToTag.TASK_REMOTEID, newTask.getValue(Task.REMOTE_ID));
+            link.setValue(TaskToTag.TAG_REMOTEID, tagUuid);
             taskToTagDao.createNew(link);
         }
         return newTask;
