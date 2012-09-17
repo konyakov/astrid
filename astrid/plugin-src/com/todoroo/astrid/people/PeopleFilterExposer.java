@@ -25,7 +25,6 @@ import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Field;
-import com.todoroo.andlib.sql.Join;
 import com.todoroo.andlib.sql.Order;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.sql.QueryTemplate;
@@ -38,7 +37,6 @@ import com.todoroo.astrid.api.FilterWithCustomIntent;
 import com.todoroo.astrid.api.FilterWithUpdate;
 import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
-import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.TagData;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.data.User;
@@ -146,11 +144,9 @@ public class PeopleFilterExposer extends BroadcastReceiver {
         int themeFlags = isTablet ? ThemeService.FLAG_FORCE_LIGHT : 0;
 
         String title = context.getString(R.string.actfm_my_shared_tasks_title);
-        QueryTemplate template = new QueryTemplate().join(Join.inner(Metadata.TABLE.as("mtags"),
-                Criterion.and(Task.ID.eq(Field.field("mtags." + Metadata.TASK.name)),
-                        Field.field("mtags." + Metadata.KEY.name).eq(TagService.KEY),
-                        Field.field("mtags." + TagService.TAG.name).in(names),
-                        TaskCriteria.activeVisibleMine())));
+        QueryTemplate template = TagService.tagsJoin(Criterion.and(
+                Field.field(TagService.TAG_PREFIX + TagData.NAME.name).in(names),
+                TaskCriteria.activeVisibleMine()));
 
         FilterWithCustomIntent filter = new FilterWithCustomIntent(title, title, template, null);
 

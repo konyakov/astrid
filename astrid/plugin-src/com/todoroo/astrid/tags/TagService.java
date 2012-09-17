@@ -144,37 +144,42 @@ public final class TagService {
             return tag;
         }
 
-        private static final String LINK_TABLE_ALIAS = "taglinks";
-        private static final String TAG_TABLE_ALIAS = "tagTableAlias";
-        /**
-         * Return SQL selector query for getting tasks with a given tagData
-         *
-         * @param tagData
-         * @return
-         */
         public QueryTemplate queryTemplate(Criterion criterion) {
-            String linkPrefix = LINK_TABLE_ALIAS + ".";
-            String tagPrefix = TAG_TABLE_ALIAS + ".";
-
-            Field tagIdField = Field.field(tagPrefix + TagData.ID.name);
-            Field tagRemoteIdField = Field.field(tagPrefix + TagData.REMOTE_ID.name);
-
-            return new QueryTemplate()
-                .join(
-                    Join.inner(TaskToTag.TABLE.as(LINK_TABLE_ALIAS),
-                            Criterion.or(
-                                    Task.ID.eq(Field.field(linkPrefix + TaskToTag.TASK_ID.name)),
-                                    Task.REMOTE_ID.eq(Field.field(linkPrefix + TaskToTag.TASK_REMOTEID)))))
-                .join(
-                    Join.inner(TagData.TABLE.as(TAG_TABLE_ALIAS),
-                            Criterion.or(
-                                    Field.field(linkPrefix + TaskToTag.TAG_ID.name).eq(tagIdField),
-                                    Field.field(linkPrefix + TaskToTag.TAG_REMOTEID.name).eq(tagRemoteIdField))))
-                .where(Criterion.and(
-                        Criterion.or(tagIdField.eq(id), tagRemoteIdField.eq(remoteId)),
-                        criterion));
+            return tagsJoin(Criterion.and(
+                    Criterion.or(TAG_ID_FIELD.eq(id), TAG_REMOTE_ID_FIELD.eq(remoteId)),
+                    criterion));
         }
 
+    }
+
+    private static final String LINK_TABLE_ALIAS = "taglinks";
+    private static final String LINK_PREFIX = LINK_TABLE_ALIAS + ".";
+    private static final String TAG_TABLE_ALIAS = "tagTableAlias";
+    public static final String TAG_PREFIX = TAG_TABLE_ALIAS + ".";
+
+    public static final Field TAG_ID_FIELD = Field.field(TAG_PREFIX + TagData.ID.name);
+    public static final Field TAG_REMOTE_ID_FIELD = Field.field(TAG_PREFIX + TagData.REMOTE_ID.name);
+    /**
+     * Return SQL selector query for getting tasks with a given tagData
+     *
+     * @param tagData
+     * @return
+     */
+    public static QueryTemplate tagsJoin(Criterion criterion) {
+
+
+        return new QueryTemplate()
+            .join(
+                Join.inner(TaskToTag.TABLE.as(LINK_TABLE_ALIAS),
+                        Criterion.or(
+                                Task.ID.eq(Field.field(LINK_PREFIX + TaskToTag.TASK_ID.name)),
+                                Task.REMOTE_ID.eq(Field.field(LINK_PREFIX + TaskToTag.TASK_REMOTEID)))))
+            .join(
+                Join.inner(TagData.TABLE.as(TAG_TABLE_ALIAS),
+                        Criterion.or(
+                                Field.field(LINK_PREFIX + TaskToTag.TAG_ID.name).eq(TAG_ID_FIELD),
+                                Field.field(LINK_PREFIX + TaskToTag.TAG_REMOTEID.name).eq(TAG_REMOTE_ID_FIELD))))
+            .where(criterion);
     }
 
     public static Criterion memberOfTagData(long tagDataId, long tagDataRemoteId) {
