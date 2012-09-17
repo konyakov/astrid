@@ -98,6 +98,7 @@ public final class ActFmSyncService {
     @Autowired ActFmDataService actFmDataService;
     @Autowired TaskDao taskDao;
     @Autowired TagDataDao tagDataDao;
+    @Autowired TagService tagService;
     @Autowired UpdateDao updateDao;
     @Autowired MetadataDao metadataDao;
     @Autowired ABTestEventReportingService abTestEventReportingService;
@@ -479,8 +480,8 @@ public final class ActFmSyncService {
         try {
             params.add("token"); params.add(token);
             JSONObject result = actFmInvoker.invoke("task_save", params.toArray(new Object[params.size()]));
-            ArrayList<Metadata> metadata = new ArrayList<Metadata>();
-            JsonHelper.taskFromJson(result, task, metadata);
+            Set<String> tags = new HashSet<String>();
+            JsonHelper.taskFromJson(result, task, tags);
         } catch (JSONException e) {
             handleException("task-save-json", e);
         } catch (IOException e) {
@@ -813,11 +814,11 @@ public final class ActFmSyncService {
         result = actFmInvoker.invoke("task_show", "id", task.getValue(Task.REMOTE_ID),
                 "token", token);
 
-        ArrayList<Metadata> metadata = new ArrayList<Metadata>();
-        JsonHelper.taskFromJson(result, task, metadata);
+        Set<String> tags = new HashSet<String>();
+        JsonHelper.taskFromJson(result, task, tags);
         task.putTransitory(SyncFlags.ACTFM_SUPPRESS_SYNC, true);
         taskService.save(task);
-        metadataService.synchronizeMetadata(task.getId(), metadata, Metadata.KEY.eq(TagService.KEY));
+        tagService.synchronizeTags(task.getId(), tags);
         synchronizeAttachments(result, task);
     }
 
@@ -1205,7 +1206,7 @@ public final class ActFmSyncService {
         protected void mergeAndSave(JSONArray list, HashMap<Long,Long> locals, long serverTime) throws JSONException {
             Task remote = new Task();
 
-            ArrayList<Metadata> metadata = new ArrayList<Metadata>();
+            Set<String> tags = new HashSet<String>();
             HashSet<Long> ids = new HashSet<Long>(list.length());
 
             long timeDelta = serverTime == 0 ? 0 : DateUtilities.now() - serverTime * 1000;
@@ -1221,7 +1222,7 @@ public final class ActFmSyncService {
                     continue; // Modified locally more recently than remotely -- don't overwrite changes
                 }
 
-                JsonHelper.taskFromJson(item, remote, metadata);
+                JsonHelper.taskFromJson(item, remote, tags);
 
 
                 if(remote.getValue(Task.USER_ID) == 0) {
@@ -1252,7 +1253,7 @@ public final class ActFmSyncService {
                 }
 
                 ids.add(remote.getId());
-                metadataService.synchronizeMetadata(remote.getId(), metadata, MetadataCriteria.withKey(TagService.KEY));
+                tagService.synchronizeTags(remote.getId(), tags);
                 synchronizeAttachments(item, remote);
                 remote.clear();
             }
@@ -1535,8 +1536,7 @@ public final class ActFmSyncService {
          * @param metadata
          * @throws JSONException
          */
-        public static void taskFromJson(JSONObject json, Task model, ArrayList<Metadata> metadata) throws JSONException {
-            metadata.clear();
+        public static void taskFromJson(JSONObject json, Task model, Set<String> tagList) throws JSONException {
             model.clearValue(Task.REMOTE_ID);
             long remoteId = json.getLong("id");
             if (remoteId == 0)
@@ -1575,11 +1575,7 @@ public final class ActFmSyncService {
                 String name = tag.getString("name");
                 if(TextUtils.isEmpty(name))
                     continue;
-                Metadata tagMetadata = new Metadata();
-                tagMetadata.setValue(Metadata.KEY, TagService.KEY);
-                tagMetadata.setValue(TagService.TAG, name);
-                tagMetadata.setValue(TagService.REMOTE_ID, tag.getLong("id"));
-                metadata.add(tagMetadata);
+                tagList.add(name);
             }
         }
 
