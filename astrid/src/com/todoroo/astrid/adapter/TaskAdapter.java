@@ -116,7 +116,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
             Metadata.ID.name).as("taskRabId"); //$NON-NLS-1$
 
     @SuppressWarnings("nls")
-    private static final StringProperty TAGS = new StringProperty(null, "group_concat(" + TagData.NAME.name + ", '  |  ')").as("tags");
+    private static final StringProperty TAGS = new StringProperty(null, "group_concat(" + TagData.NAME + ", '  |  ')").as("tags");
 
     // --- other constants
 

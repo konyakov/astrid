@@ -88,7 +88,7 @@ public class TaskDao extends RemoteModelDao<Task> {
     	    return Criterion.and(Task.COMPLETION_DATE.eq(0),
     	            Task.DELETION_DATE.eq(0),
     	            Task.HIDE_UNTIL.lt(Functions.now()),
-    	            Field.field(Task.FLAGS.name + " & " + //$NON-NLS-1$
+    	            Field.field(Task.FLAGS + " & " + //$NON-NLS-1$
     	                    Task.FLAG_IS_READONLY).eq(0),
     	                    Task.USER_ID.eq(0));
     	}

@@ -44,7 +44,6 @@ import com.todoroo.astrid.data.TaskApiDao;
 import com.todoroo.astrid.data.TaskToTag;
 import com.todoroo.astrid.service.MetadataService;
 import com.todoroo.astrid.service.TagDataService;
-import com.todoroo.astrid.service.TaskService;
 import com.todoroo.astrid.utility.Flags;
 
 /**
@@ -93,9 +92,6 @@ public final class TagService {
 
     @Autowired
     private MetadataDao metadataDao;
-
-    @Autowired
-    private TaskService taskService;
 
     @Autowired
     private TagDataService tagDataService;
@@ -173,13 +169,15 @@ public final class TagService {
                 Join.inner(TaskToTag.TABLE.as(LINK_TABLE_ALIAS),
                         Criterion.or(
                                 Task.ID.eq(Field.field(LINK_PREFIX + TaskToTag.TASK_ID.name)),
-                                Task.REMOTE_ID.eq(Field.field(LINK_PREFIX + TaskToTag.TASK_REMOTEID)))))
+                                Task.REMOTE_ID.eq(Field.field(LINK_PREFIX + TaskToTag.TASK_REMOTEID.name)))))
             .join(
                 Join.inner(TagData.TABLE.as(TAG_TABLE_ALIAS),
                         Criterion.or(
                                 Field.field(LINK_PREFIX + TaskToTag.TAG_ID.name).eq(TAG_ID_FIELD),
                                 Field.field(LINK_PREFIX + TaskToTag.TAG_REMOTEID.name).eq(TAG_REMOTE_ID_FIELD))))
-            .where(criterion);
+            .where(Criterion.and(
+                    Criterion.not(Field.field(LINK_PREFIX + TaskToTag.DELETED_AT.name).gt(0)),
+                    criterion));
     }
 
     public static Criterion memberOfTagData(long tagDataId, long tagDataRemoteId) {
@@ -536,7 +534,7 @@ public final class TagService {
     }
 
     private void invalidateTaskCache(String tag) {
-        taskService.clearDetails(Task.ID.in(rowsWithTag(tag, Task.ID)));
+        PluginServices.getTaskService().clearDetails(Task.ID.in(rowsWithTag(tag, Task.ID)));
         Flags.set(Flags.REFRESH);
     }
 
