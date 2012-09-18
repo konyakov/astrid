@@ -22,7 +22,6 @@ import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Functions;
-import com.todoroo.andlib.sql.Join;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.billing.BillingConstants;
@@ -503,46 +502,29 @@ public class ActFmSyncV2Provider extends SyncV2Provider {
     }
 
     private void pushQueuedTasksByTag(TagData tagData, SyncResultCallback callback, AtomicInteger finisher) {
-        Long[] ids;
-        TodorooCursor<Metadata> allTagged = metadataService.query(Query.select(Metadata.TASK).where(Criterion.and(Metadata.KEY.eq(TagService.KEY),
-                TagService.TAG.eqCaseInsensitive(tagData.getValue(TagData.NAME)))));
-        try {
-            ids = new Long[allTagged.getCount()];
-            Metadata m = new Metadata();
-            int i = 0;
-            for (allTagged.moveToFirst(); !allTagged.isAfterLast(); allTagged.moveToNext()) {
-                m.readFromCursor(allTagged);
-                ids[i] = m.getValue(Metadata.TASK);
-                i++;
-            }
-        } finally {
-            allTagged.close();
-        }
-
         TodorooCursor<Task> taskCursor = taskService.query(Query.select(Task.PROPERTIES)
-                .join(Join.inner(Metadata.TABLE, Criterion.and(Metadata.KEY.eq(TagService.KEY), Metadata.TASK.eq(Task.ID),
-                        TagService.TAG.eqCaseInsensitive(tagData.getValue(TagData.NAME)))))
-                .where(Criterion.or(
-                        Criterion.and(TaskCriteria.isActive(),
-                                Task.REMOTE_ID.isNull()),
-                        Criterion.and(Task.REMOTE_ID.isNotNull(),
-                                Task.MODIFICATION_DATE.gt(Task.LAST_SYNC)))));
+                .where(Criterion.and(TagService.memberOfTagData(tagData.getValue(TagData.REMOTE_ID)),
+                        Task.MODIFICATION_DATE.gt(Task.LAST_SYNC))));
+
         try {
             pushQueued(callback, finisher, taskCursor, true, taskPusher);
         } finally {
             taskCursor.close();
         }
 
+
         TodorooCursor<Metadata> filesCursor = metadataService.query(Query.select(Metadata.PROPERTIES)
                 .where(Criterion.and(
                         MetadataCriteria.withKey(FileMetadata.METADATA_KEY),
                         FileMetadata.REMOTE_ID.eq(0),
-                        Metadata.TASK.in(ids))));
+                        Metadata.TASK.in(Query.select(Task.ID).from(Task.TABLE)
+                                .where(TagService.memberOfTagData(tagData.getValue(TagData.REMOTE_ID)))))));
         try {
             pushQueued(callback, finisher, filesCursor, false, filesPusher);
         } finally {
             filesCursor.close();
         }
+
     }
 
 }

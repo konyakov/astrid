@@ -179,7 +179,7 @@ public final class TagService {
     public static Criterion memberOfTagData(long tagDataUuid) {
         Criterion criterion = Criterion.none;
         if (tagDataUuid > 0) {
-            criterion = TaskToTag.TAG_REMOTEID.eq(tagDataUuid);
+            criterion = Criterion.and(Criterion.not(TaskToTag.DELETED_AT.gt(0)), TaskToTag.TAG_REMOTEID.eq(tagDataUuid));
         }
 
         return Task.REMOTE_ID.in(Query.select(TaskToTag.TASK_REMOTEID).from(TaskToTag.TABLE).where(criterion));

@@ -544,7 +544,7 @@ public class TaskService {
             task.putTransitory(TRANS_ASSIGNED, true);
 
         if (forMetadata != null && forMetadata.size() > 0 &&
-                TagService.KEY.equals(forMetadata.getAsString(Metadata.KEY.name))) {
+                TagService.KEY.equals(forMetadata.getAsString(Metadata.KEY.name))) { // Supports legacy tag info
             String tag = forMetadata.getAsString(TagService.TAG.name);
             if (!TextUtils.isEmpty(tag))
                 tags.add(tag);

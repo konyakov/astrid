@@ -22,7 +22,6 @@ import com.todoroo.astrid.api.FilterListItem;
 import com.todoroo.astrid.api.FilterWithCustomIntent;
 import com.todoroo.astrid.api.FilterWithUpdate;
 import com.todoroo.astrid.core.PluginServices;
-import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.TagData;
 import com.todoroo.astrid.data.TaskApiDao.TaskCriteria;
 import com.todoroo.astrid.tags.TagFilterExposer;
@@ -45,8 +44,7 @@ public class FeaturedListFilterExposer extends TagFilterExposer {
         String title = tag.tag;
         QueryTemplate tagTemplate = tag.queryTemplate(criterion);
         ContentValues contentValues = new ContentValues();
-        contentValues.put(Metadata.KEY.name, TagService.KEY);
-        contentValues.put(TagService.TAG.name, tag.tag);
+        contentValues.put(KEY_TAG_REMOTE_ID, tag.remoteId);
 
         FilterWithUpdate filter = new FilterWithUpdate(tag.tag,
                 title, tagTemplate,
