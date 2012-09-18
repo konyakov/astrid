@@ -40,7 +40,6 @@ import com.todoroo.astrid.api.FilterWithCustomIntent;
 import com.todoroo.astrid.api.FilterWithUpdate;
 import com.todoroo.astrid.core.SortHelper;
 import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
-import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.TagData;
 import com.todoroo.astrid.gtasks.GtasksPreferenceService;
 import com.todoroo.astrid.service.AstridDependencyInjector;
@@ -65,14 +64,15 @@ public class TagFilterExposer extends BroadcastReceiver implements AstridFilterE
 
     protected boolean addUntaggedFilter = true;
 
+    public static final String KEY_TAG_REMOTE_ID = "tag_remote_id"; //$NON-NLS-1$
+
     /** Create filter from new tag object */
     @SuppressWarnings("nls")
     public static FilterWithCustomIntent filterFromTag(Context context, Tag tag, Criterion criterion) {
         String title = tag.tag;
         QueryTemplate tagTemplate = tag.queryTemplate(criterion);
         ContentValues contentValues = new ContentValues();
-        contentValues.put(Metadata.KEY.name, TagService.KEY);
-        contentValues.put(TagService.TAG.name, tag.tag);
+        contentValues.put(KEY_TAG_REMOTE_ID, tag.remoteId);
 
         FilterWithUpdate filter = new FilterWithUpdate(tag.tag,
                 title, tagTemplate,

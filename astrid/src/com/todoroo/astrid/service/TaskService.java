@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import org.weloveastrid.rmilk.data.MilkTaskFields;
 
 import android.content.ContentValues;
+import android.text.TextUtils;
 
 import com.todoroo.andlib.data.Property;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -40,6 +41,7 @@ import com.todoroo.astrid.gcal.GCalHelper;
 import com.todoroo.astrid.gtasks.GtasksMetadata;
 import com.todoroo.astrid.opencrx.OpencrxCoreUtils;
 import com.todoroo.astrid.producteev.sync.ProducteevTask;
+import com.todoroo.astrid.tags.TagFilterExposer;
 import com.todoroo.astrid.tags.TagService;
 import com.todoroo.astrid.utility.TitleParser;
 
@@ -509,6 +511,7 @@ public class TaskService {
             PluginServices.getExceptionService().reportError("parse-quick-add", e); //$NON-NLS-1$
         }
 
+        long tagRemoteId = 0;
         ContentValues forMetadata = null;
         if (values != null && values.size() > 0) {
             ContentValues forTask = new ContentValues();
@@ -525,6 +528,13 @@ public class TaskService {
                         continue outer;
                     }
 
+                if (TagFilterExposer.KEY_TAG_REMOTE_ID.equals(key) && value instanceof Long) {
+                    if ((Long) value > 0) {
+                        tagRemoteId = (Long) value;
+                    }
+                    continue outer;
+                }
+
                 AndroidUtilities.putInto(forTask, key, value, true);
             }
             task.mergeWithoutReplacement(forTask);
@@ -533,15 +543,28 @@ public class TaskService {
         if (task.getValue(Task.USER_ID) != Task.USER_ID_SELF)
             task.putTransitory(TRANS_ASSIGNED, true);
 
+        if (forMetadata != null && forMetadata.size() > 0 &&
+                TagService.KEY.equals(forMetadata.getAsString(Metadata.KEY.name))) {
+            String tag = forMetadata.getAsString(TagService.TAG.name);
+            if (!TextUtils.isEmpty(tag))
+                tags.add(tag);
+        }
+
         PluginServices.getTaskService().quickAdd(task, tags);
+        if (tagRemoteId > 0) {
+            PluginServices.getTaskToTagDao().createLink(task.getValue(Task.REMOTE_ID), tagRemoteId);
+        }
+
         if (quickAddMarkup)
             task.putTransitory(TRANS_QUICK_ADD_MARKUP, true);
 
         if (forMetadata != null && forMetadata.size() > 0) {
-            Metadata metadata = new Metadata();
-            metadata.setValue(Metadata.TASK, task.getId());
-            metadata.mergeWith(forMetadata);
-            PluginServices.getMetadataService().save(metadata);
+            if (!TagService.KEY.equals(forMetadata.getAsString(Metadata.KEY.name))) {
+                Metadata metadata = new Metadata();
+                metadata.setValue(Metadata.TASK, task.getId());
+                metadata.mergeWith(forMetadata);
+                PluginServices.getMetadataService().save(metadata);
+            }
         }
 
         return task;

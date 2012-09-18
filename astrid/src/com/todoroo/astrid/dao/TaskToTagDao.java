@@ -1,8 +1,11 @@
 package com.todoroo.astrid.dao;
 
 import com.todoroo.andlib.data.DatabaseDao;
+import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
+import com.todoroo.andlib.sql.Criterion;
+import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.data.TaskToTag;
 import com.todoroo.astrid.service.StatisticsConstants;
@@ -27,5 +30,23 @@ public class TaskToTagDao extends DatabaseDao<TaskToTag> {
             Preferences.setBoolean(AstridPreferences.P_FIRST_LIST, false);
         }
         return super.createNew(item);
+    }
+
+    public boolean createLink(long taskRemoteId, long tagRemoteId) {
+        TodorooCursor<TaskToTag> existing = query(Query.select(TaskToTag.ID).where(Criterion.and(
+                TaskToTag.TASK_REMOTEID.eq(taskRemoteId),
+                TaskToTag.TAG_REMOTEID.eq(tagRemoteId),
+                Criterion.not(TaskToTag.DELETED_AT.gt(0)))));
+        try {
+            if (existing.getCount() > 0)
+                return true;
+
+            TaskToTag link = new TaskToTag();
+            link.setValue(TaskToTag.TASK_REMOTEID, taskRemoteId);
+            link.setValue(TaskToTag.TAG_REMOTEID, tagRemoteId);
+            return createNew(link);
+        } finally {
+            existing.close();
+        }
     }
 }
