@@ -172,14 +172,14 @@ public final class TagService {
                 Join.inner(TagData.TABLE.as(TAG_TABLE_ALIAS),
                                 Field.field(LINK_PREFIX + TaskToTag.TAG_REMOTEID.name).eq(TAG_REMOTE_ID_FIELD)))
             .where(Criterion.and(
-                    Criterion.not(Field.field(LINK_PREFIX + TaskToTag.DELETED_AT.name).gt(0)),
+                    Field.field(LINK_PREFIX + TaskToTag.DELETED_AT.name).eq(0),
                     criterion));
     }
 
     public static Criterion memberOfTagData(long tagDataUuid) {
         Criterion criterion = Criterion.none;
         if (tagDataUuid > 0) {
-            criterion = Criterion.and(Criterion.not(TaskToTag.DELETED_AT.gt(0)), TaskToTag.TAG_REMOTEID.eq(tagDataUuid));
+            criterion = Criterion.and(TaskToTag.DELETED_AT.eq(0), TaskToTag.TAG_REMOTEID.eq(tagDataUuid));
         }
 
         return Task.REMOTE_ID.in(Query.select(TaskToTag.TASK_REMOTEID).from(TaskToTag.TABLE).where(criterion));
@@ -289,7 +289,7 @@ public final class TagService {
         }
         Query query = Query.select(properties)
                 .join(Join.inner(TaskToTag.TABLE, TaskToTag.TAG_REMOTEID.eq(TagData.REMOTE_ID)))
-                .where(Criterion.and(TaskToTag.TASK_REMOTEID.eq(taskUuid), Criterion.not(TaskToTag.DELETED_AT.gt(0)), criterion));
+                .where(Criterion.and(TaskToTag.TASK_REMOTEID.eq(taskUuid), TaskToTag.DELETED_AT.eq(0), criterion));
 
         return tagDataService.query(query);
     }
@@ -418,7 +418,7 @@ public final class TagService {
     public boolean synchronizeTags(long taskUuid, Set<String> tags) {
         HashSet<Long> existingLinks = new HashSet<Long>();
         TodorooCursor<TaskToTag> links = taskToTagDao.query(Query.select(TaskToTag.PROPERTIES)
-                .where(Criterion.and(TaskToTag.TASK_REMOTEID.eq(taskUuid), Criterion.not(TaskToTag.DELETED_AT.gt(0)))));
+                .where(Criterion.and(TaskToTag.TASK_REMOTEID.eq(taskUuid), TaskToTag.DELETED_AT.eq(0))));
         try {
             for (links.moveToFirst(); !links.isAfterLast(); links.moveToNext()) {
                 TaskToTag link = new TaskToTag(links);
