@@ -219,7 +219,7 @@ public class TagViewFragment extends TaskListFragment {
         postLoadTagData();
         super.initializeData();
 
-        setUpMembersGallery();
+        setupHeaderView();
 
         if (extras.getBoolean(TOKEN_START_ACTIVITY, false)) {
             extras.remove(TOKEN_START_ACTIVITY);
@@ -309,7 +309,7 @@ public class TagViewFragment extends TaskListFragment {
         }
     }
 
-    protected void setUpMembersGallery() {
+    protected void setupHeaderView() {
         if (tagData == null)
             return;
         LinearLayout membersView = (LinearLayout)getView().findViewById(R.id.shared_with);
@@ -576,7 +576,7 @@ public class TagViewFragment extends TaskListFragment {
 
     @Override
     protected void refresh() {
-        setUpMembersGallery();
+        setupHeaderView();
         loadTaskListContent(true);
         ((TextView)taskListView.findViewById(android.R.id.empty)).setText(R.string.TLA_no_items);
     }
