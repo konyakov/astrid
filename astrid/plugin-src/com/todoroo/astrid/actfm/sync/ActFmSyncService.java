@@ -647,6 +647,10 @@ public final class ActFmSyncService {
             params.add("description"); params.add(tagData.getValue(TagData.TAG_DESCRIPTION));
         }
 
+        if (values.containsKey(TagData.FLAGS.name) && (tagData.getValue(TagData.FLAGS) & TagData.FLAG_REUSABLE) > 0) {
+            params.add("reusable"); params.add(1);
+        }
+
         if(values.containsKey(TagData.MEMBERS.name)) {
             params.add("members");
             try {
