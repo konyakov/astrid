@@ -19,9 +19,9 @@ import com.todoroo.astrid.adapter.TaskAdapter;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.utility.Flags;
 
-public class ReusableTaskAdapter extends TaskAdapter {
+public class CloneableTaskAdapter extends TaskAdapter {
 
-    public ReusableTaskAdapter(TaskListFragment fragment, int resource,
+    public CloneableTaskAdapter(TaskListFragment fragment, int resource,
             Cursor c, AtomicReference<String> query, boolean autoRequery,
             OnCompletedTaskListener onCompletedTaskListener) {
         super(fragment, resource, c, query, autoRequery, onCompletedTaskListener);

@@ -37,7 +37,7 @@ public abstract class CloneableTagViewFragment extends TagViewFragment {
 
     @Override
     protected TaskAdapter createTaskAdapter(TodorooCursor<Task> cursor) {
-        return new ReusableTaskAdapter(this, R.layout.reusable_task_adapter_row,
+        return new CloneableTaskAdapter(this, R.layout.reusable_task_adapter_row,
                 cursor, sqlQueryTemplate, false, null);
     }
 
