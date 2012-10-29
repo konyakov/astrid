@@ -63,6 +63,7 @@ import com.todoroo.astrid.service.abtesting.ABTestEventReportingService;
 import com.todoroo.astrid.tags.TagService;
 import com.todoroo.astrid.tags.TagsPlugin;
 import com.todoroo.astrid.tags.reusable.FeaturedListFilterMode;
+import com.todoroo.astrid.tags.reusable.ReusableListFilterMode;
 import com.todoroo.astrid.ui.DateChangedAlerts;
 import com.todoroo.astrid.ui.FragmentPopover;
 import com.todoroo.astrid.ui.MainMenuPopover;
@@ -94,6 +95,7 @@ public class TaskListActivity extends AstridActivity implements MainMenuListener
     public static final int FILTER_MODE_NORMAL = 0;
     public static final int FILTER_MODE_PEOPLE = 1;
     public static final int FILTER_MODE_FEATURED = 2;
+    public static final int FILTER_MODE_REUSABLE = 3;
 
     public static final int REQUEST_CODE_RESTART = 10;
 
@@ -807,6 +809,9 @@ public class TaskListActivity extends AstridActivity implements MainMenuListener
         case MainMenuPopover.MAIN_MENU_ITEM_FEATURED_LISTS:
             setFilterMode(FILTER_MODE_FEATURED);
             return;
+        case MainMenuPopover.MAIN_MENU_ITEM_REUSABLE_LISTS:
+            setFilterMode(FILTER_MODE_REUSABLE);
+            return;
         case MainMenuPopover.MAIN_MENU_ITEM_FRIENDS:
             setFilterMode(FILTER_MODE_PEOPLE);
             return;
@@ -869,6 +874,9 @@ public class TaskListActivity extends AstridActivity implements MainMenuListener
             break;
         case FILTER_MODE_FEATURED:
             filterModeSpec = new FeaturedListFilterMode();
+            break;
+        case FILTER_MODE_REUSABLE:
+            filterModeSpec = new ReusableListFilterMode();
             break;
         case FILTER_MODE_NORMAL:
         default:

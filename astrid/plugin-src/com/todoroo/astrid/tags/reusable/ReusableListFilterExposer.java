@@ -33,7 +33,12 @@ public class ReusableListFilterExposer extends CloneableTagFilterExposer {
                 Tag tag = new Tag(tagData);
                 return filterFromCloneableList(tag, TaskCriteria.activeAndVisible(), ReusableTaskListFragment.class);
             } else {
-                return null;
+                TagData test = new TagData();
+                test.setValue(TagData.NAME, "Reusable List!"); //$NON-NLS-1$
+                test.setFlag(TagData.FLAGS, TagData.FLAG_REUSABLE, true);
+                PluginServices.getTagDataService().save(test);
+                Tag tag = new Tag(test);
+                return filterFromCloneableList(tag, TaskCriteria.activeAndVisible(), ReusableTaskListFragment.class);
             }
         } finally {
             firstFilter.close();
