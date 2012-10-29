@@ -52,4 +52,9 @@ public class FeaturedListFilterExposer extends CloneableTagFilterExposer {
         return FeaturedTaskListFragment.class;
     }
 
+    @Override
+    public String getBroadcastAction() {
+        return FeaturedListFilterAdapter.BROADCAST_SEND_FEATURED_LISTS;
+    }
+
 }

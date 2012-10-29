@@ -29,7 +29,7 @@ public abstract class CloneableTagFilterExposer extends TagFilterExposer {
         addUntaggedFilter = false;
         FilterListItem[] listAsArray = prepareFilters(context);
 
-        Intent broadcastIntent = new Intent(FeaturedListFilterAdapter.BROADCAST_SEND_FEATURED_LISTS);
+        Intent broadcastIntent = new Intent(getBroadcastAction());
         broadcastIntent.putExtra(AstridApiConstants.EXTRAS_RESPONSE, listAsArray);
         context.sendBroadcast(broadcastIntent, AstridApiConstants.PERMISSION_READ);
     }
@@ -59,6 +59,8 @@ public abstract class CloneableTagFilterExposer extends TagFilterExposer {
     }
 
     public abstract Class<? extends CloneableTagViewFragment> getFragmentClass();
+
+    public abstract String getBroadcastAction();
 
     @Override
     protected Filter constructFilter(Context context, Tag tag) {

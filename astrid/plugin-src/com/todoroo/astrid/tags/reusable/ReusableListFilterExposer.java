@@ -55,4 +55,9 @@ public class ReusableListFilterExposer extends CloneableTagFilterExposer {
         return ReusableTaskListFragment.class;
     }
 
+    @Override
+    public String getBroadcastAction() {
+        return ReusableListFilterAdapter.BROADCAST_SEND_REUSABLE_LISTS;
+    }
+
 }

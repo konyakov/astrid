@@ -339,7 +339,10 @@ public final class TagService {
                 tagData.readFromCursor(cursor);
                 String tagName = tagData.getValue(TagData.NAME).trim();
                 Tag tag = new Tag(tagData);
-                if(tagData.getValue(TagData.DELETION_DATE) > 0 || tagData.getFlag(TagData.FLAGS, TagData.FLAG_EMERGENT) || tagData.getFlag(TagData.FLAGS, TagData.FLAG_FEATURED)) {
+                if(tagData.getValue(TagData.DELETION_DATE) > 0 ||
+                        tagData.getFlag(TagData.FLAGS, TagData.FLAG_EMERGENT) ||
+                        tagData.getFlag(TagData.FLAGS, TagData.FLAG_FEATURED) ||
+                        tagData.getFlag(TagData.FLAGS, TagData.FLAG_REUSABLE)) {
                     tags.remove(tagName);
                     continue;
                 }
