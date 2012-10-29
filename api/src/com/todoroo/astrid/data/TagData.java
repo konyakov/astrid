@@ -135,6 +135,9 @@ public final class TagData extends RemoteModel {
     /** whether tag represents a featured list */
     public static final int FLAG_FEATURED = 1 << 3;
 
+    /** whether tag represents a reusable list */
+    public static final int FLAG_REUSABLE = 1 << 4;
+
     // --- defaults
 
     /** Default values container */

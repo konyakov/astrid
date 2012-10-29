@@ -14,15 +14,13 @@ import com.todoroo.astrid.data.TaskApiDao.TaskCriteria;
 import com.todoroo.astrid.tags.TagService;
 import com.todoroo.astrid.tags.TagService.Tag;
 
-public class FeaturedListFilterExposer extends CloneableTagFilterExposer {
-
-    public static final String PREF_SHOULD_SHOW_FEATURED_LISTS = "show_featured_lists"; //$NON-NLS-1$
+public class ReusableListFilterExposer extends CloneableTagFilterExposer {
 
     public static Filter getDefaultFilter() {
         TodorooCursor<TagData> firstFilter = PluginServices.getTagDataService()
         .query(Query.select(TagData.PROPERTIES)
                 .where(Criterion.and(
-                        Functions.bitwiseAnd(TagData.FLAGS, TagData.FLAG_FEATURED).gt(0),
+                        Functions.bitwiseAnd(TagData.FLAGS, TagData.FLAG_REUSABLE).gt(0),
                         TagData.DELETION_DATE.eq(0),
                         TagData.NAME.isNotNull(),
                         TagData.NAME.neq(""))) //$NON-NLS-1$
@@ -33,7 +31,7 @@ public class FeaturedListFilterExposer extends CloneableTagFilterExposer {
                 firstFilter.moveToFirst();
                 TagData tagData = new TagData(firstFilter);
                 Tag tag = new Tag(tagData);
-                return filterFromCloneableList(tag, TaskCriteria.activeAndVisible(), FeaturedTaskListFragment.class);
+                return filterFromCloneableList(tag, TaskCriteria.activeAndVisible(), ReusableTaskListFragment.class);
             } else {
                 return null;
             }
@@ -44,12 +42,12 @@ public class FeaturedListFilterExposer extends CloneableTagFilterExposer {
 
     @Override
     protected List<Tag> getTagList() {
-        return TagService.getInstance().getFeaturedLists();
+        return TagService.getInstance().getReusableLists();
     }
 
     @Override
     public Class<? extends CloneableTagViewFragment> getFragmentClass() {
-        return FeaturedTaskListFragment.class;
+        return ReusableTaskListFragment.class;
     }
 
 }

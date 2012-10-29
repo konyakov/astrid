@@ -361,35 +361,34 @@ public final class TagService {
         return tagList;
     }
 
-    public ArrayList<Tag> getFeaturedLists() {
-        HashMap<String, Tag> tags = new HashMap<String, Tag>();
+    private ArrayList<Tag> getCloneableListHelper(Criterion flagCriterion) {
+        ArrayList<Tag> tagList = new ArrayList<Tag>();
 
         TodorooCursor<TagData> cursor = tagDataService.query(Query.select(TagData.PROPERTIES)
-                .where(Functions.bitwiseAnd(TagData.FLAGS, TagData.FLAG_FEATURED).gt(0)));
+                .where(flagCriterion).orderBy(Order.asc(TagData.NAME)));
         try {
             TagData tagData = new TagData();
             for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                 tagData.readFromCursor(cursor);
                 if (tagData.getValue(TagData.DELETION_DATE) > 0)
                     continue;
-                String tagName = tagData.getValue(TagData.NAME).trim();
                 Tag tag = new Tag(tagData);
                 if(TextUtils.isEmpty(tag.tag))
                     continue;
-                tags.put(tagName, tag);
+                tagList.add(tag);
             }
         } finally {
             cursor.close();
         }
-        ArrayList<Tag> tagList = new ArrayList<Tag>(tags.values());
-        Collections.sort(tagList,
-                new Comparator<Tag>() {
-            @Override
-            public int compare(Tag object1, Tag object2) {
-                return object1.tag.compareToIgnoreCase(object2.tag);
-            }
-        });
         return tagList;
+    }
+
+    public ArrayList<Tag> getFeaturedLists() {
+        return getCloneableListHelper(Functions.bitwiseAnd(TagData.FLAGS, TagData.FLAG_FEATURED).gt(0));
+    }
+
+    public ArrayList<Tag> getReusableLists() {
+        return getCloneableListHelper(Functions.bitwiseAnd(TagData.FLAGS, TagData.FLAG_REUSABLE).gt(0));
     }
 
     /**
