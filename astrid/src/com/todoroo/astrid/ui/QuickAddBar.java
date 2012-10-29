@@ -84,6 +84,7 @@ public class QuickAddBar extends LinearLayout {
     private GCalControlSet gcalControl;
     private EditPeopleControlSet peopleControl;
     private boolean usePeopleControl = true;
+    private boolean useControlSets = true;
 
     private String currentVoiceFile = null;
 
@@ -91,9 +92,6 @@ public class QuickAddBar extends LinearLayout {
     @Autowired ExceptionService exceptionService;
     @Autowired MetadataService metadataService;
     @Autowired ActFmPreferenceService actFmPreferenceService;
-
-//    private VoiceInputAssistant voiceInputAssistant;
-//    private RecognizerApi recognizerApi;
 
     private VoiceRecognizer voiceRecognizer;
 
@@ -144,7 +142,7 @@ public class QuickAddBar extends LinearLayout {
         quickAddBox.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                quickAddControlsContainer.setVisibility(hasFocus ? View.VISIBLE : View.GONE);
+                quickAddControlsContainer.setVisibility(hasFocus && useControlSets ? View.VISIBLE : View.GONE);
             }
         });
 
@@ -199,6 +197,12 @@ public class QuickAddBar extends LinearLayout {
     public void setUsePeopleControl(boolean usePeopleControl) {
         this.usePeopleControl = usePeopleControl;
         peopleControl.getDisplayView().setVisibility(usePeopleControl ? View.VISIBLE : View.GONE);
+    }
+
+    public void setShouldUseControlSets(boolean useControlSets) {
+        this.useControlSets = useControlSets;
+        if (!useControlSets)
+            quickAddControlsContainer.setVisibility(View.GONE);
     }
 
     private void setUpQuickAddControlSets() {
@@ -269,7 +273,7 @@ public class QuickAddBar extends LinearLayout {
         try {
             if (title != null)
                 title = title.trim();
-            boolean assignedToMe = usePeopleControl ? peopleControl.willBeAssignedToMe() : true;
+            boolean assignedToMe = (usePeopleControl && useControlSets) ? peopleControl.willBeAssignedToMe() : true;
             if (!assignedToMe && !actFmPreferenceService.isLoggedIn()) {
                 DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
                     @Override
@@ -296,17 +300,19 @@ public class QuickAddBar extends LinearLayout {
             if (title != null)
                 task.setValue(Task.TITLE, title); // need this for calendar
 
-            if (repeatControl.isRecurrenceSet())
-                repeatControl.writeToModel(task);
-            if (deadlineControl.isDeadlineSet()) {
-                task.clearValue(Task.HIDE_UNTIL);
-                deadlineControl.writeToModel(task);
-                TaskDao.createDefaultHideUntil(task);
-            }
-            gcalControl.writeToModel(task);
-            if (!assignedToMe) {
-                peopleControl.setTask(task);
-                peopleControl.saveSharingSettings(null);
+            if (useControlSets) {
+                if (repeatControl.isRecurrenceSet())
+                    repeatControl.writeToModel(task);
+                if (deadlineControl.isDeadlineSet()) {
+                    task.clearValue(Task.HIDE_UNTIL);
+                    deadlineControl.writeToModel(task);
+                    TaskDao.createDefaultHideUntil(task);
+                }
+                gcalControl.writeToModel(task);
+                if (!assignedToMe) {
+                    peopleControl.setTask(task);
+                    peopleControl.saveSharingSettings(null);
+                }
             }
 
             TaskService.createWithValues(task, fragment.getFilter().valuesForNewTasks, title);

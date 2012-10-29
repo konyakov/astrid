@@ -16,6 +16,7 @@ import com.todoroo.astrid.api.FilterListItem;
 import com.todoroo.astrid.api.FilterWithCustomIntent;
 import com.todoroo.astrid.api.FilterWithUpdate;
 import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.data.TaskApiDao.TaskCriteria;
 import com.todoroo.astrid.tags.TagFilterExposer;
 import com.todoroo.astrid.tags.TagService;
@@ -39,6 +40,7 @@ public abstract class CloneableTagFilterExposer extends TagFilterExposer {
         ContentValues contentValues = new ContentValues();
         contentValues.put(Metadata.KEY.name, TagService.KEY);
         contentValues.put(TagService.TAG.name, tag.tag);
+        contentValues.put(Task.USER_ID.name, Task.USER_ID_UNASSIGNED);
 
         FilterWithUpdate filter = new FilterWithUpdate(tag.tag,
                 title, tagTemplate,

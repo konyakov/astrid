@@ -4,6 +4,12 @@ package com.todoroo.astrid.tags.reusable;
 public class ReusableTaskListFragment extends CloneableTagViewFragment {
 
     @Override
+    protected void setupQuickAddBar() {
+        super.setupQuickAddBar();
+        quickAddBar.setShouldUseControlSets(false);
+    }
+
+    @Override
     protected void setupHeaderView() {
         // Do nothing--there isn't one yet!
     }
