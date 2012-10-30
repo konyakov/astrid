@@ -343,7 +343,8 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
 
         AstridActivity activity = (AstridActivity) getActivity();
 
-        isTemplate = activity.getIntent().getBooleanExtra(TOKEN_IS_TEMPLATE, false);
+        if (activity != null)
+            isTemplate = activity.getIntent().getBooleanExtra(TOKEN_IS_TEMPLATE, false);
 
         setUpUIComponents();
         adjustInfoPopovers();
@@ -436,12 +437,13 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
         if (isTemplate && moreControls.getChildCount() == 0) {
             mPager.setVisibility(View.GONE);
             mIndicator.setVisibility(View.GONE);
+            commentsBar.setVisibility(View.GONE);
         } else {
             mPager.setVisibility(View.VISIBLE);
             mIndicator.setVisibility(View.VISIBLE);
+            commentsBar.setVisibility(View.VISIBLE);
         }
 
-        commentsBar.setVisibility(View.VISIBLE);
         moreTab.setVisibility(View.VISIBLE);
     }
 
@@ -475,6 +477,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
         title = (EditText) editTitle.getView().findViewById(R.id.title);
         controls.add(editTitle);
         titleControls.addView(editTitle.getDisplayView(), 0, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1.0f));
+        editTitle.setCompleteBoxVisibility(!isTemplate);
 
         if (!isTemplate) {
             timerAction = new TimerActionControlSet(
@@ -667,6 +670,9 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
                 }
             }
         }
+
+        View updatesFooter = getView().findViewById(R.id.updatesFooter);
+        updatesFooter.setVisibility(isTemplate ? View.GONE : View.VISIBLE);
 
         getActivity().getIntent().removeExtra(TOKEN_OPEN_CONTROL);
 
@@ -901,10 +907,11 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
 
         if (!onPause && !cancelFinish) {
             boolean taskEditActivity = (getActivity() instanceof TaskEditActivity);
-            boolean isAssignedToMe = peopleControlSet.isAssignedToMe();
+            boolean isAssignedToMe = (peopleControlSet != null && peopleControlSet.isAssignedToMe());
             boolean showRepeatAlert = model.getTransitory(TaskService.TRANS_REPEAT_CHANGED) != null
                     && !TextUtils.isEmpty(model.getValue(Task.RECURRENCE));
-            String assignedTo = peopleControlSet.getAssignedToString();
+
+            String assignedTo = (peopleControlSet != null ? peopleControlSet.getAssignedToString() : ""); //$NON-NLS-1$
             String assignedEmail = ""; //$NON-NLS-1$
             long assignedId = Task.USER_ID_IGNORE;
             try {

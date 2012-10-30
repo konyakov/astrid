@@ -99,6 +99,10 @@ public class EditTitleControlSet extends TaskEditControlSet implements Importanc
         importanceValue = model.getValue(Task.IMPORTANCE);
     }
 
+    public void setCompleteBoxVisibility(boolean visible) {
+        completeBox.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
 
     private void updateCompleteBox() {
         int valueToUse = importanceValue;

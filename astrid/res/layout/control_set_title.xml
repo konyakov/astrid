@@ -19,7 +19,6 @@
         android:layout_width="45dip"
         android:layout_height="wrap_content"
         android:minHeight="30dip"
-        android:layout_marginRight="5dip"
         android:layout_marginLeft="5dip"
         android:scaleType="center"
         android:src="@drawable/btn_check" />
@@ -29,6 +28,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="100"
+        android:layout_marginLeft="5dip"
         android:autoText="true"
         android:background="?attr/asEditTextBackground"
         android:capitalize="sentences"
