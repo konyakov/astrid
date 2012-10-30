@@ -948,6 +948,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
     public static void removeExtrasFromIntent(Intent intent) {
         if (intent != null) {
             intent.removeExtra(TaskListActivity.OPEN_TASK);
+            intent.removeExtra(TaskListActivity.OPEN_TASK_TEMPLATE);
             intent.removeExtra(TOKEN_PICTURE_IN_PROGRESS);
         }
     }

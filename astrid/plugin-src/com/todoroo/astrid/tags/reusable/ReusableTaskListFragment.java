@@ -23,7 +23,7 @@ public class ReusableTaskListFragment extends CloneableTagViewFragment {
 
     @Override
     public void onTaskListItemClicked(long taskId, boolean editable) {
-        // Better do something crazy here--template tasks need special editing
+        mListener.onTaskListItemClicked(taskId, editable, true);
     }
 
 }

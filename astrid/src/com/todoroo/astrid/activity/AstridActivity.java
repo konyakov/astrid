@@ -250,14 +250,18 @@ public class AstridActivity extends FragmentActivity
 
     @Override
     public void onTaskListItemClicked(long taskId, boolean editable) {
+        onTaskListItemClicked(taskId, editable, false);
+    }
+
+    public void onTaskListItemClicked(long taskId, boolean editable, boolean isTemplate) {
         if (editable) {
-            editTask(taskId);
+            editTask(taskId, isTemplate);
         } else {
             showComments(taskId);
         }
     }
 
-    private void editTask(long taskId) {
+    private void editTask(long taskId, boolean isTemplate) {
         Intent intent = new Intent(this, TaskEditActivity.class);
         intent.putExtra(TaskEditFragment.TOKEN_ID, taskId);
         getIntent().putExtra(TaskEditFragment.TOKEN_ID, taskId); // Needs to be in activity intent so that TEA onResume doesn't create a blank activity

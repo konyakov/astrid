@@ -89,6 +89,7 @@ public class TaskListActivity extends AstridActivity implements MainMenuListener
     public static final String TOKEN_CREATE_NEW_LIST_NAME = "newListName"; //$NON-NLS-1$
 
     public static final String OPEN_TASK = "openTask"; //$NON-NLS-1$
+    public static final String OPEN_TASK_TEMPLATE = "openTaskTemplate";  //$NON-NLS-1$
 
     private static final String FILTER_MODE = "filterMode"; //$NON-NLS-1$
 
@@ -468,18 +469,21 @@ public class TaskListActivity extends AstridActivity implements MainMenuListener
 
         if (getIntent().hasExtra(OPEN_TASK)) {
             long id = getIntent().getLongExtra(OPEN_TASK, 0);
+            boolean isTemplate = getIntent().getBooleanExtra(OPEN_TASK_TEMPLATE, false);
             if (id > 0) {
-                onTaskListItemClicked(id, true);
+                onTaskListItemClicked(id, true, isTemplate);
             } else {
                 TaskListFragment tlf = getTaskListFragment();
                 if (tlf != null) {
                     Task result = tlf.quickAddBar.quickAddTask("", true); //$NON-NLS-1$
                     if (result != null)
-                        onTaskListItemClicked(result.getId(), true);
+                        onTaskListItemClicked(result.getId(), true, isTemplate);
                 }
             }
-            if (fragmentLayout == LAYOUT_SINGLE)
+            if (fragmentLayout == LAYOUT_SINGLE) {
                 getIntent().removeExtra(OPEN_TASK);
+                getIntent().removeExtra(OPEN_TASK_TEMPLATE);
+            }
         }
 
         if (getIntent().getBooleanExtra(TOKEN_CREATE_NEW_LIST, false)) {
@@ -497,15 +501,27 @@ public class TaskListActivity extends AstridActivity implements MainMenuListener
         startActivityForResult(newTagIntent, FilterListFragment.REQUEST_NEW_LIST);
     }
 
-    @Override
-    public void onTaskListItemClicked(long taskId, boolean editable) {
-        if (fragmentLayout != LAYOUT_SINGLE && editable)
+    private void beforeTaskListItemClick(long taskId, boolean editable, boolean isTemplate) {
+        if (fragmentLayout != LAYOUT_SINGLE && editable) {
             getIntent().putExtra(OPEN_TASK, taskId);
+            getIntent().putExtra(OPEN_TASK_TEMPLATE, isTemplate);
+        }
         CommentsFragment tuf = getTagUpdatesFragment();
         if (tuf != null)
             tuf.getView().setVisibility(View.INVISIBLE);
 
+    }
+
+    @Override
+    public void onTaskListItemClicked(long taskId, boolean editable) {
+        beforeTaskListItemClick(taskId, editable, false);
         super.onTaskListItemClicked(taskId, editable);
+    }
+
+    @Override
+    public void onTaskListItemClicked(long taskId, boolean editable, boolean isTemplate) {
+        beforeTaskListItemClick(taskId, editable, isTemplate);
+        super.onTaskListItemClicked(taskId, editable, isTemplate);
     }
 
     public void setListsTitle(String title) {

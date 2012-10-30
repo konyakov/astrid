@@ -275,6 +275,7 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
     public interface OnTaskListItemClickedListener {
         public void onTaskListItemClicked(long taskId);
         public void onTaskListItemClicked(long taskId, boolean editable);
+        public void onTaskListItemClicked(long taskId, boolean editable, boolean isTemplate);
     }
 
     @Override
