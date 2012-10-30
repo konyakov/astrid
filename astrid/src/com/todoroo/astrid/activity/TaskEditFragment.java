@@ -131,6 +131,8 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
      */
     public static final String TOKEN_ID = "id"; //$NON-NLS-1$
 
+    public static final String TOKEN_IS_TEMPLATE = "is_template";  //$NON-NLS-1$
+
     /**
      * Content Values to set
      */
@@ -265,6 +267,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
 
     private long remoteId = 0;
 
+    private boolean isTemplate = false;
 
     private WebServicesView webServices = null;
 
@@ -340,6 +343,8 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
 
         AstridActivity activity = (AstridActivity) getActivity();
 
+        isTemplate = activity.getIntent().getBooleanExtra(TOKEN_IS_TEMPLATE, false);
+
         setUpUIComponents();
         adjustInfoPopovers();
 
@@ -378,6 +383,9 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
 
         if (moreSectionHasControls)
             tabStyle |= TaskEditViewPager.TAB_SHOW_MORE;
+
+        if (isTemplate)
+            tabStyle = TaskEditViewPager.TAB_SHOW_MORE;
 
         if (editNotes == null) {
             instantiateEditNotes();
@@ -425,6 +433,14 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
             ((ViewGroup) moreControls.getParent()).removeView(moreControls);
         }
 
+        if (isTemplate && moreControls.getChildCount() == 0) {
+            mPager.setVisibility(View.GONE);
+            mIndicator.setVisibility(View.GONE);
+        } else {
+            mPager.setVisibility(View.VISIBLE);
+            mIndicator.setVisibility(View.VISIBLE);
+        }
+
         commentsBar.setVisibility(View.VISIBLE);
         moreTab.setVisibility(View.VISIBLE);
     }
@@ -460,42 +476,46 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
         controls.add(editTitle);
         titleControls.addView(editTitle.getDisplayView(), 0, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT, 1.0f));
 
-        timerAction = new TimerActionControlSet(
-                getActivity(), getView());
-        controls.add(timerAction);
+        if (!isTemplate) {
+            timerAction = new TimerActionControlSet(
+                    getActivity(), getView());
+            controls.add(timerAction);
 
-        tagsControlSet = new TagsControlSet(getActivity(),
-                R.layout.control_set_tags,
-                R.layout.control_set_default_display, R.string.TEA_tags_label_long);
-        controls.add(tagsControlSet);
-        controlSetMap.put(getString(R.string.TEA_ctrl_lists_pref),
-                tagsControlSet);
+            tagsControlSet = new TagsControlSet(getActivity(),
+                    R.layout.control_set_tags,
+                    R.layout.control_set_default_display, R.string.TEA_tags_label_long);
+            controls.add(tagsControlSet);
+            controlSetMap.put(getString(R.string.TEA_ctrl_lists_pref),
+                    tagsControlSet);
 
-        // EditPeopleControlSet relies on the "tags" transitory created by the
-        // TagsControlSet, so we put the tags control before the people control
-        // EditPeopleControlSet also relies on taskRabbitControl set being added
-        // that way it can tell if it needs to show task rabbit in the spinner
+            // EditPeopleControlSet relies on the "tags" transitory created by the
+            // TagsControlSet, so we put the tags control before the people control
+            // EditPeopleControlSet also relies on taskRabbitControl set being added
+            // that way it can tell if it needs to show task rabbit in the spinner
 
-        peopleControlSet = new EditPeopleControlSet(getActivity(), this,
-                R.layout.control_set_assigned,
-                R.layout.control_set_default_display,
-                R.string.actfm_EPA_assign_label_long, REQUEST_LOG_IN);
-        if(Locale.getDefault().getCountry().equals("US")) { //$NON-NLS-1$
-            taskRabbitControl = new TaskRabbitControlSet(this, R.layout.control_set_default_display);
-            controls.add(taskRabbitControl);
-            peopleControlSet.addListener(taskRabbitControl);
+            peopleControlSet = new EditPeopleControlSet(getActivity(), this,
+                    R.layout.control_set_assigned,
+                    R.layout.control_set_default_display,
+                    R.string.actfm_EPA_assign_label_long, REQUEST_LOG_IN);
+            if(Locale.getDefault().getCountry().equals("US")) { //$NON-NLS-1$
+                taskRabbitControl = new TaskRabbitControlSet(this, R.layout.control_set_default_display);
+                controls.add(taskRabbitControl);
+                peopleControlSet.addListener(taskRabbitControl);
+            }
+            controls.add(peopleControlSet);
+            controlSetMap.put(getString(R.string.TEA_ctrl_who_pref),
+                    peopleControlSet);
         }
-        controls.add(peopleControlSet);
-        controlSetMap.put(getString(R.string.TEA_ctrl_who_pref),
-                peopleControlSet);
 
         RepeatControlSet repeatControls = new RepeatControlSet(getActivity(),
                 R.layout.control_set_repeat,
                 R.layout.control_set_repeat_display, R.string.repeat_enabled);
 
-        GCalControlSet gcalControl = new GCalControlSet(getActivity(),
-                R.layout.control_set_gcal, R.layout.control_set_gcal_display,
-                R.string.gcal_TEA_addToCalendar_label);
+        GCalControlSet gcalControl = null;
+        if (!isTemplate)
+            gcalControl = new GCalControlSet(getActivity(),
+                    R.layout.control_set_gcal, R.layout.control_set_gcal_display,
+                    R.string.gcal_TEA_addToCalendar_label);
 
         // The deadline control set contains the repeat controls and the
         // calendar controls.
@@ -503,16 +523,25 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
         // deadline control, because
         // otherwise the correct date may not be written to the calendar event.
         // Order matters!
-        DeadlineControlSet deadlineControl = new DeadlineControlSet(
+        DeadlineControlSet deadlineControl;
+        if (gcalControl != null)
+            deadlineControl = new DeadlineControlSet(
                 getActivity(), R.layout.control_set_deadline,
                 R.layout.control_set_deadline_display, repeatControls,
                 repeatControls.getDisplayView(), gcalControl.getDisplayView());
+        else
+            deadlineControl = new DeadlineControlSet(
+                    getActivity(), R.layout.control_set_deadline,
+                    R.layout.control_set_deadline_display, repeatControls,
+                    repeatControls.getDisplayView());
+
         controlSetMap.put(getString(R.string.TEA_ctrl_when_pref),
                 deadlineControl);
         controls.add(repeatControls);
         repeatControls.addListener(editTitle);
         controls.add(deadlineControl);
-        controls.add(gcalControl);
+        if (gcalControl != null)
+            controls.add(gcalControl);
 
         ImportanceControlSet importanceControl = new ImportanceControlSet(
                 getActivity(), R.layout.control_set_importance);
@@ -529,64 +558,66 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
         controlSetMap.put(getString(R.string.TEA_ctrl_notes_pref),
                 notesControlSet);
 
-        ReminderControlSet reminderControl = new ReminderControlSet(
-                getActivity(), R.layout.control_set_reminders,
-                R.layout.control_set_default_display);
-        controls.add(reminderControl);
-        controlSetMap.put(getString(R.string.TEA_ctrl_reminders_pref),
-                reminderControl);
+        if (!isTemplate) {
+            ReminderControlSet reminderControl = new ReminderControlSet(
+                    getActivity(), R.layout.control_set_reminders,
+                    R.layout.control_set_default_display);
+            controls.add(reminderControl);
+            controlSetMap.put(getString(R.string.TEA_ctrl_reminders_pref),
+                    reminderControl);
 
-        hideUntilControls = new HideUntilControlSet(getActivity(),
-                R.layout.control_set_hide,
-                R.layout.control_set_default_display,
-                R.string.hide_until_prompt);
-        controls.add(hideUntilControls);
-        reminderControl.addViewToBody(hideUntilControls.getDisplayView());
+            hideUntilControls = new HideUntilControlSet(getActivity(),
+                    R.layout.control_set_hide,
+                    R.layout.control_set_default_display,
+                    R.string.hide_until_prompt);
+            controls.add(hideUntilControls);
+            reminderControl.addViewToBody(hideUntilControls.getDisplayView());
 
-        // TODO: Fix the fact that hideUntil doesn't update accordingly with date changes when lazy loaded. Until then, don't lazy load.
-        hideUntilControls.getView();
+            // TODO: Fix the fact that hideUntil doesn't update accordingly with date changes when lazy loaded. Until then, don't lazy load.
+            hideUntilControls.getView();
 
-        TimerControlSet timerControl = new TimerControlSet(getActivity(),
-                R.layout.control_set_timers,
-                R.layout.control_set_default_display,
-                R.string.TEA_timer_controls);
-        timerAction.addListener(timerControl);
-        controls.add(timerControl);
-        controlSetMap.put(getString(R.string.TEA_ctrl_timer_pref), timerControl);
+            TimerControlSet timerControl = new TimerControlSet(getActivity(),
+                    R.layout.control_set_timers,
+                    R.layout.control_set_default_display,
+                    R.string.TEA_timer_controls);
+            timerAction.addListener(timerControl);
+            controls.add(timerControl);
+            controlSetMap.put(getString(R.string.TEA_ctrl_timer_pref), timerControl);
 
-        filesControlSet = new FilesControlSet(getActivity(),
-                R.layout.control_set_files,
-                R.layout.control_set_files_display,
-                R.string.TEA_control_files);
-        controls.add(filesControlSet);
-        controlSetMap.put(getString(R.string.TEA_ctrl_files_pref), filesControlSet);
+            filesControlSet = new FilesControlSet(getActivity(),
+                    R.layout.control_set_files,
+                    R.layout.control_set_files_display,
+                    R.string.TEA_control_files);
+            controls.add(filesControlSet);
+            controlSetMap.put(getString(R.string.TEA_ctrl_files_pref), filesControlSet);
 
-        try {
-            if (ProducteevUtilities.INSTANCE.isLoggedIn()) {
-                ProducteevControlSet producteevControl = new ProducteevControlSet(
-                        getActivity(), R.layout.control_set_producteev,
-                        R.layout.control_set_default_display,
-                        R.string.producteev_TEA_control_set_display);
-                controls.add(producteevControl);
-                basicControls.addView(producteevControl.getDisplayView());
-                notesEditText.setHint(R.string.producteev_TEA_notes);
+            try {
+                if (ProducteevUtilities.INSTANCE.isLoggedIn()) {
+                    ProducteevControlSet producteevControl = new ProducteevControlSet(
+                            getActivity(), R.layout.control_set_producteev,
+                            R.layout.control_set_default_display,
+                            R.string.producteev_TEA_control_set_display);
+                    controls.add(producteevControl);
+                    basicControls.addView(producteevControl.getDisplayView());
+                    notesEditText.setHint(R.string.producteev_TEA_notes);
+                }
+            } catch (Exception e) {
+                Log.e("astrid-error", "loading-control-set", e); //$NON-NLS-1$ //$NON-NLS-2$
             }
-        } catch (Exception e) {
-            Log.e("astrid-error", "loading-control-set", e); //$NON-NLS-1$ //$NON-NLS-2$
-        }
 
-        try {
-            if (OpencrxCoreUtils.INSTANCE.isLoggedIn()) {
-                OpencrxControlSet ocrxControl = new OpencrxControlSet(
-                        getActivity(), R.layout.control_set_opencrx,
-                        R.layout.control_set_opencrx_display,
-                        R.string.opencrx_TEA_opencrx_title);
-                controls.add(ocrxControl);
-                basicControls.addView(ocrxControl.getDisplayView());
-                notesEditText.setHint(R.string.opencrx_TEA_notes);
+            try {
+                if (OpencrxCoreUtils.INSTANCE.isLoggedIn()) {
+                    OpencrxControlSet ocrxControl = new OpencrxControlSet(
+                            getActivity(), R.layout.control_set_opencrx,
+                            R.layout.control_set_opencrx_display,
+                            R.string.opencrx_TEA_opencrx_title);
+                    controls.add(ocrxControl);
+                    basicControls.addView(ocrxControl.getDisplayView());
+                    notesEditText.setHint(R.string.opencrx_TEA_notes);
+                }
+            } catch (Exception e) {
+                Log.e("astrid-error", "loading-control-set", e); //$NON-NLS-1$ //$NON-NLS-2$
             }
-        } catch (Exception e) {
-            Log.e("astrid-error", "loading-control-set", e); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         ArrayList<String> controlOrder = BeastModePreferences.constructOrderedControlList(getActivity());
@@ -616,7 +647,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
                 View controlSet = null;
                 TaskEditControlSet curr = controlSetMap.get(item);
 
-                if (item.equals(shareViewDescriptor))
+                if (item.equals(shareViewDescriptor) && peopleControlSet != null)
                     controlSet = peopleControlSet.getSharedWithRow();
                 else if (curr != null)
                     controlSet = (LinearLayout) curr.getDisplayView();
@@ -734,6 +765,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
         }
 
         long idParam = intent.getLongExtra(TOKEN_ID, -1L);
+        isTemplate = intent.getBooleanExtra(TOKEN_IS_TEMPLATE, false);
         if (idParam > -1L) {
             model = taskService.fetchById(idParam, Task.PROPERTIES);
             if (model != null && model.containsNonNullValue(Task.REMOTE_ID)) {
@@ -778,6 +810,15 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
 
     }
 
+    public void setIsTemplate(boolean isTemplate) {
+        boolean oldValue = this.isTemplate;
+        this.isTemplate = isTemplate;
+        if (oldValue != this.isTemplate) {
+            controls.clear();
+            setUpUIComponents();
+        }
+    }
+
     public long getTaskIdInProgress() {
         if (model != null && model.getId() > 0)
             return model.getId();
@@ -809,7 +850,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
         loadItem(intent);
 
         synchronized (controls) {
-            if (!FileMetadata.taskHasAttachments(model.getId())) {
+            if (!FileMetadata.taskHasAttachments(model.getId()) && filesControlSet != null) {
                 filesControlSet.getDisplayView().setVisibility(View.GONE);
             }
             for (TaskEditControlSet controlSet : controls)

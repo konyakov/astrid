@@ -1,13 +1,19 @@
 package com.todoroo.astrid.tags.reusable;
 
+import android.view.View;
+import android.view.ViewGroup;
+
 import com.timsu.astrid.R;
+
 
 
 public class ReusableTaskListFragment extends CloneableTagViewFragment {
 
     @Override
-    protected int getTaskListBodyLayout() {
-        return R.layout.task_list_body_standard;
+    protected View getListBody(ViewGroup root) {
+        taskListView = getActivity().getLayoutInflater().inflate(
+                R.layout.task_list_body_standard, root, false);
+        return taskListView;
     }
 
     @Override

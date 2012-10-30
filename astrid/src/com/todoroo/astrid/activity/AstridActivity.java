@@ -264,6 +264,7 @@ public class AstridActivity extends FragmentActivity
     private void editTask(long taskId, boolean isTemplate) {
         Intent intent = new Intent(this, TaskEditActivity.class);
         intent.putExtra(TaskEditFragment.TOKEN_ID, taskId);
+        intent.putExtra(TaskEditFragment.TOKEN_IS_TEMPLATE, isTemplate);
         getIntent().putExtra(TaskEditFragment.TOKEN_ID, taskId); // Needs to be in activity intent so that TEA onResume doesn't create a blank activity
         if (getIntent().hasExtra(TaskListFragment.TOKEN_FILTER))
             intent.putExtra(TaskListFragment.TOKEN_FILTER, getIntent().getParcelableExtra(TaskListFragment.TOKEN_FILTER));
