@@ -26,7 +26,6 @@ import android.database.sqlite.SQLiteException;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.ActionBar;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.SupportActivity;
 import android.support.v4.view.Menu;
@@ -202,7 +201,6 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
 
     // --- fragment handling variables
     protected OnTaskListItemClickedListener mListener;
-    private boolean mDualFragments = false;
 
     /*
      * ======================================================================
@@ -337,17 +335,6 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
         setUpUiComponents();
         initializeData();
         setupQuickAddBar();
-
-        Fragment filterlistFrame = getFragmentManager().findFragmentByTag(
-                FilterListFragment.TAG_FILTERLIST_FRAGMENT);
-        mDualFragments = (filterlistFrame != null)
-                && filterlistFrame.isInLayout();
-
-        if (mDualFragments) {
-            // In dual-pane mode, the list view highlights the selected item.
-            getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-            getListView().setItemsCanFocus(false);
-        }
 
         if (Preferences.getInt(AstridPreferences.P_UPGRADE_FROM, -1) > -1)
             upgradeService.showChangeLog(getActivity(),
@@ -1193,13 +1180,6 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
         if (getActivity() instanceof TaskListActivity) {
             ((TaskListActivity) getActivity()).refreshFilterCount(filter);
         }
-    }
-
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-        if (mDualFragments)
-            setSelection(position);
     }
 
     @Override

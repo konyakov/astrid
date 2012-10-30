@@ -7,7 +7,6 @@ import com.todoroo.astrid.activity.FilterListFragment;
 import com.todoroo.astrid.activity.FilterModeSpec;
 import com.todoroo.astrid.activity.TaskListFragment;
 import com.todoroo.astrid.api.Filter;
-import com.todoroo.astrid.api.FilterListItem;
 import com.todoroo.astrid.ui.MainMenuPopover;
 
 public class PeopleFilterMode implements FilterModeSpec {
@@ -24,20 +23,6 @@ public class PeopleFilterMode implements FilterModeSpec {
     public Class<? extends FilterListFragment> getFilterListClass() {
         return PeopleListFragment.class;
     }
-
-    @Override
-    public void onFilterItemClickedCallback(FilterListItem item) {
-//        if (imageView == null)
-//            return;
-//        if (item instanceof FilterWithUpdate)
-//            imageView.setUrl(((FilterWithUpdate) item).imageUrl);
-//        else
-//            imageView.setUrl(null);
-    }
-//
-//    public void setImageView(AsyncImageView imageView) {
-//        this.imageView = imageView;
-//    }
 
     @Override
     public int[] getForbiddenMenuItems() {

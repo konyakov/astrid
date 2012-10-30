@@ -419,9 +419,7 @@ public class TaskListActivity extends AstridActivity implements MainMenuListener
         if (tef != null)
             onBackPressed();
 
-        boolean result = super.onFilterItemClicked(item);
-        filterModeSpec.onFilterItemClickedCallback(item);
-        return result;
+        return super.onFilterItemClicked(item);
     }
 
     @Override
