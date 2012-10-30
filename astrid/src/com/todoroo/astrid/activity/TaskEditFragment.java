@@ -816,7 +816,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
 
     }
 
-    public void setIsTemplate(boolean isTemplate) {
+    private void setIsTemplate(boolean isTemplate) {
         boolean oldValue = this.isTemplate;
         this.isTemplate = isTemplate;
         if (oldValue != this.isTemplate) {
@@ -843,6 +843,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
     public void repopulateFromScratch(Intent intent) {
         model = null;
         remoteId = 0;
+        setIsTemplate(intent.getBooleanExtra(TOKEN_IS_TEMPLATE, false));
         populateFields(intent);
         if (webServices != null) {
             webServices.setTask(model);

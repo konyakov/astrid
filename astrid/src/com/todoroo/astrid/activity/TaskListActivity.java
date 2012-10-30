@@ -610,6 +610,9 @@ public class TaskListActivity extends AstridActivity implements MainMenuListener
             CommentsFragment tuf = getTagUpdatesFragment();
             if (tuf != null)
                 tuf.getView().setVisibility(View.VISIBLE);
+
+            if (!filterModeSpec.showComments())
+                findViewById(R.id.taskedit_fragment_container).setVisibility(View.GONE);
         }
         super.onBackPressed();
     }
