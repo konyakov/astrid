@@ -95,6 +95,7 @@ import com.todoroo.astrid.tags.TagMetadata;
 import com.todoroo.astrid.timers.TimerDecorationExposer;
 import com.todoroo.astrid.ui.CheckableImageView;
 import com.todoroo.astrid.utility.Constants;
+import com.todoroo.astrid.utility.ResourceDrawableCache;
 
 /**
  * Adapter for displaying a user's tasks as a list
@@ -159,33 +160,30 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
         Task.DELETION_DATE
     };
 
-    public static int[] IMPORTANCE_RESOURCES = new int[] {
+    public static final int[] IMPORTANCE_RESOURCES = new int[] {
         R.drawable.importance_check_1,
         R.drawable.importance_check_2,
         R.drawable.importance_check_3,
         R.drawable.importance_check_4,
     };
 
-    public static int[] LEGACY_IMPORTANCE_RESOURCES = new int[] {
-        R.drawable.importance_1,
-        R.drawable.importance_2,
-        R.drawable.importance_3,
-        R.drawable.importance_4,
-    };
-
-    public static int[] IMPORTANCE_RESOURCES_LARGE = new int[] {
+    public static final int[] IMPORTANCE_RESOURCES_LARGE = new int[] {
         R.drawable.check_box_large_1,
         R.drawable.check_box_large_2,
         R.drawable.check_box_large_3,
         R.drawable.check_box_large_4,
     };
 
-    public static int[] IMPORTANCE_REPEAT_RESOURCES = new int[] {
+    public static final int[] IMPORTANCE_REPEAT_RESOURCES = new int[] {
         R.drawable.importance_check_repeat_1,
         R.drawable.importance_check_repeat_2,
         R.drawable.importance_check_repeat_3,
         R.drawable.importance_check_repeat_4,
     };
+
+    private static final Drawable[] IMPORTANCE_DRAWABLES = new Drawable[IMPORTANCE_RESOURCES.length];
+    private static final Drawable[] IMPORTANCE_DRAWABLES_LARGE = new Drawable[IMPORTANCE_RESOURCES_LARGE.length];
+    private static final Drawable[] IMPORTANCE_REPEAT_DRAWABLES = new Drawable[IMPORTANCE_REPEAT_RESOURCES.length];
 
     // --- instance variables
 
@@ -274,6 +272,16 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
         fragment.getActivity().getTheme().resolveAttribute(R.attr.asReadonlyTaskBackground, readonlyBg, false);
         readonlyBackground = readonlyBg.data;
 
+        preloadDrawables(IMPORTANCE_RESOURCES, IMPORTANCE_DRAWABLES);
+        preloadDrawables(IMPORTANCE_RESOURCES_LARGE, IMPORTANCE_DRAWABLES_LARGE);
+        preloadDrawables(IMPORTANCE_REPEAT_RESOURCES, IMPORTANCE_REPEAT_DRAWABLES);
+
+    }
+
+    private void preloadDrawables(int[] resourceIds, Drawable[] drawables) {
+        for (int i = 0; i < resourceIds.length; i++) {
+            drawables[i] = resources.getDrawable(resourceIds[i]);
+        }
     }
 
     protected int computeMinRowHeight() {
@@ -493,7 +501,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
                 taskAction.setVisibility(View.VISIBLE);
                 TaskAction action = taskActionLoader.get(task.getId());
                 if (action != null) {
-                    taskAction.setImageBitmap(action.icon);
+                    taskAction.setImageDrawable(action.icon);
                     taskAction.setTag(action);
                 }
             } else {
@@ -504,10 +512,6 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
 
         if(Math.abs(DateUtilities.now() - task.getValue(Task.MODIFICATION_DATE)) < 2000L)
             mostRecentlyMade = task.getId();
-
-        if (Preferences.getBoolean(R.string.p_default_showdecorations_key, false)) {
-            decorationManager.request(viewHolder);
-        }
 
     }
 
@@ -1145,9 +1149,9 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
                         if (viewHolder.isTaskRabbit) {
                             pictureView.setDefaultImageResource(R.drawable.task_rabbit_image);
                         } else if(task.getValue(Task.USER_ID) == Task.USER_ID_UNASSIGNED)
-                            pictureView.setDefaultImageResource(R.drawable.icn_anyone_transparent);
+                            pictureView.setDefaultImageDrawable(ResourceDrawableCache.getImageDrawableFromId(resources, R.drawable.icn_anyone_transparent));
                         else {
-                            pictureView.setDefaultImageResource(R.drawable.icn_default_person_image);
+                            pictureView.setDefaultImageDrawable(ResourceDrawableCache.getImageDrawableFromId(resources, R.drawable.icn_default_person_image));
                             try {
                                 JSONObject user = new JSONObject(task.getValue(Task.USER));
                                 pictureView.setUrl(user.optString("picture")); //$NON-NLS-1$
@@ -1177,9 +1181,9 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
             if (value >= IMPORTANCE_RESOURCES.length)
                 value = IMPORTANCE_RESOURCES.length - 1;
             if (!TextUtils.isEmpty(task.getValue(Task.RECURRENCE))) {
-                checkBoxView.setImageResource(IMPORTANCE_REPEAT_RESOURCES[value]);
+                checkBoxView.setImageDrawable(IMPORTANCE_REPEAT_DRAWABLES[value]); //(IMPORTANCE_REPEAT_RESOURCES[value]);
             } else {
-                checkBoxView.setImageResource(IMPORTANCE_RESOURCES[value]);
+                checkBoxView.setImageDrawable(IMPORTANCE_DRAWABLES[value]);
             }
             if (titleOnlyLayout)
                 return;
@@ -1194,7 +1198,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
             if (pictureView != null && pictureView.getVisibility() == View.VISIBLE) {
                 checkBoxView.setVisibility(View.INVISIBLE);
                 if (viewHolder.pictureBorder != null)
-                    viewHolder.pictureBorder.setBackgroundResource(IMPORTANCE_RESOURCES_LARGE[value]);
+                    viewHolder.pictureBorder.setBackgroundDrawable(IMPORTANCE_DRAWABLES_LARGE[value]);
             } else {
                 checkBoxView.setVisibility(View.VISIBLE);
             }
