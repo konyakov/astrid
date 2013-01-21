@@ -370,6 +370,7 @@ public class Database extends AbstractDatabase {
             database.execSQL(addColumnSql(Update.TABLE, Update.UUID, visitor, null));
             database.execSQL(addColumnSql(Update.TABLE, Update.TASK_UUID, visitor, null));
             database.execSQL(addColumnSql(Metadata.TABLE, Metadata.DELETION_DATE, visitor, "0"));
+            database.execSQL(addColumnSql(Metadata.TABLE, Metadata.TASK_UUID, visitor, "0"));
             database.execSQL(addColumnSql(User.TABLE, User.PUSHED_AT, visitor, null));
             database.execSQL(addColumnSql(User.TABLE, User.UUID, visitor, null));
             database.execSQL(addColumnSql(User.TABLE, User.FIRST_NAME, visitor, null));

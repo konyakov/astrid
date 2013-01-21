@@ -1,5 +1,6 @@
 package com.todoroo.astrid.tags;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.todoroo.andlib.data.DatabaseDao;
@@ -7,8 +8,8 @@ import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.sql.Criterion;
+import com.todoroo.andlib.sql.Join;
 import com.todoroo.andlib.sql.Query;
-import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.dao.MetadataDao.MetadataCriteria;
 import com.todoroo.astrid.dao.TagDataDao;
@@ -107,47 +108,71 @@ public class AstridNewSyncMigrator {
 
 
         // --------------
-        // Finally, ensure that all tag metadata entities have all important fields filled in
+        // Finally, ensure that all metadata entities have all important fields filled in
         // --------------
-        Query incompleteQuery = Query.select(Metadata.PROPERTIES).where(Criterion.and(
-                MetadataCriteria.withKey(TagMetadata.KEY),
-                Criterion.or(TagMetadata.TASK_UUID.eq(0), TagMetadata.TASK_UUID.isNull(),
-                        TagMetadata.TAG_UUID.eq(0), TagMetadata.TAG_UUID.isNull())));
-        TodorooCursor<Metadata> incompleteMetadata = metadataService.query(incompleteQuery);
+
+        // Migrate all metadata to use TASK_UUID instead of legacy TASK
+        TodorooCursor<Metadata> metadata = metadataService.query(Query.select(Metadata.ID, Metadata.TASK, Task.UUID).join(Join.inner(Task.TABLE, Task.ID.eq(Metadata.TASK))));
         try {
             Metadata m = new Metadata();
-            for (incompleteMetadata.moveToFirst(); !incompleteMetadata.isAfterLast(); incompleteMetadata.moveToNext()) {
-                m.clear(); // Need this since some properties may be null
-                m.readFromCursor(incompleteMetadata);
-                boolean changes = false;
-
-                if (Constants.DEBUG)
-                    Log.w(LOG_TAG, "Incomplete linking task " + m.getValue(Metadata.TASK) + " to " + m.getValue(TagMetadata.TAG_NAME));
-
-                if (!m.containsNonNullValue(TagMetadata.TASK_UUID) || RemoteModel.NO_UUID.equals(m.getValue(TagMetadata.TASK_UUID))) {
-                    if (Constants.DEBUG)
-                        Log.w(LOG_TAG, "No task uuid");
-                    updateTaskUuid(m);
-                    changes = true;
-                }
-
-                if (!m.containsNonNullValue(TagMetadata.TAG_UUID) || RemoteModel.NO_UUID.equals(m.getValue(TagMetadata.TAG_UUID))) {
-                    if (Constants.DEBUG)
-                        Log.w(LOG_TAG, "No tag uuid");
-                    updateTagUuid(m);
-                    changes = true;
-                }
-
-                if (changes)
+            int columnIndex = metadata.getColumnIndex(Task.UUID.name);
+            for (metadata.moveToFirst(); !metadata.isAfterLast(); metadata.moveToNext()) {
+                m.clear();
+                m.readFromCursor(metadata);
+                String uuid = metadata.getString(columnIndex);
+                if (TextUtils.isEmpty(uuid)) {
+                    metadataService.delete(m);
+                } else {
+                    m.setValue(Metadata.TASK_UUID, uuid);
                     metadataService.save(m);
-
+                }
             }
         } finally {
-            incompleteMetadata.close();
+            metadata.close();
         }
 
-
-
+//
+//
+//
+//        Query incompleteQuery = Query.select(Metadata.PROPERTIES).where(Criterion.and(
+//                MetadataCriteria.withKey(TagMetadata.KEY),
+//                Criterion.or(TagMetadata.TASK_UUID.eq(0), TagMetadata.TASK_UUID.isNull(),
+//                        TagMetadata.TAG_UUID.eq(0), TagMetadata.TAG_UUID.isNull())));
+//        TodorooCursor<Metadata> incompleteMetadata = metadataService.query(incompleteQuery);
+//        try {
+//            Metadata m = new Metadata();
+//            for (incompleteMetadata.moveToFirst(); !incompleteMetadata.isAfterLast(); incompleteMetadata.moveToNext()) {
+//                m.clear(); // Need this since some properties may be null
+//                m.readFromCursor(incompleteMetadata);
+//                boolean changes = false;
+//
+//                if (Constants.DEBUG)
+//                    Log.w(LOG_TAG, "Incomplete linking task " + m.getValue(Metadata.TASK) + " to " + m.getValue(TagMetadata.TAG_NAME));
+//
+//                if (!m.containsNonNullValue(TagMetadata.TASK_UUID) || RemoteModel.NO_UUID.equals(m.getValue(TagMetadata.TASK_UUID))) {
+//                    if (Constants.DEBUG)
+//                        Log.w(LOG_TAG, "No task uuid");
+//                    updateTaskUuid(m);
+//                    changes = true;
+//                }
+//
+//                if (!m.containsNonNullValue(TagMetadata.TAG_UUID) || RemoteModel.NO_UUID.equals(m.getValue(TagMetadata.TAG_UUID))) {
+//                    if (Constants.DEBUG)
+//                        Log.w(LOG_TAG, "No tag uuid");
+//                    updateTagUuid(m);
+//                    changes = true;
+//                }
+//
+//                if (changes)
+//                    metadataService.save(m);
+//
+//            }
+//        } finally {
+//            incompleteMetadata.close();
+//        }
+//
+//
+//
         Preferences.setBoolean(PREF_SYNC_MIGRATION, true);
     }
 
@@ -176,33 +201,33 @@ public class AstridNewSyncMigrator {
             cursor.close();
         }
     }
-
-    private void updateTaskUuid(Metadata m) {
-        long taskId = m.getValue(Metadata.TASK);
-        Task task = taskDao.fetch(taskId, Task.UUID);
-        if (task != null) {
-            if (Constants.DEBUG)
-                Log.w(LOG_TAG, "Linking with task uuid " + task.getValue(Task.UUID));
-            m.setValue(TagMetadata.TASK_UUID, task.getValue(Task.UUID));
-        } else {
-            if (Constants.DEBUG)
-                Log.w(LOG_TAG, "Task not found, deleting link");
-            m.setValue(Metadata.DELETION_DATE, DateUtilities.now());
-        }
-    }
-
-    private void updateTagUuid(Metadata m) {
-        String tag = m.getValue(TagMetadata.TAG_NAME);
-        TagData tagData = tagDataService.getTag(tag, TagData.UUID);
-        if (tagData != null) {
-            if (Constants.DEBUG)
-                Log.w(LOG_TAG, "Linking with tag uuid " + tagData.getValue(TagData.UUID));
-            m.setValue(TagMetadata.TAG_UUID, tagData.getValue(TagData.UUID));
-        } else {
-            if (Constants.DEBUG)
-                Log.w(LOG_TAG, "Tag not found, deleting link");
-            m.setValue(Metadata.DELETION_DATE, DateUtilities.now());
-        }
-    }
+//
+//    private void updateTaskUuid(Metadata m) {
+//        long taskId = m.getValue(Metadata.TASK);
+//        Task task = taskDao.fetch(taskId, Task.UUID);
+//        if (task != null) {
+//            if (Constants.DEBUG)
+//                Log.w(LOG_TAG, "Linking with task uuid " + task.getValue(Task.UUID));
+//            m.setValue(TagMetadata.TASK_UUID, task.getValue(Task.UUID));
+//        } else {
+//            if (Constants.DEBUG)
+//                Log.w(LOG_TAG, "Task not found, deleting link");
+//            m.setValue(Metadata.DELETION_DATE, DateUtilities.now());
+//        }
+//    }
+//
+//    private void updateTagUuid(Metadata m) {
+//        String tag = m.getValue(TagMetadata.TAG_NAME);
+//        TagData tagData = tagDataService.getTag(tag, TagData.UUID);
+//        if (tagData != null) {
+//            if (Constants.DEBUG)
+//                Log.w(LOG_TAG, "Linking with tag uuid " + tagData.getValue(TagData.UUID));
+//            m.setValue(TagMetadata.TAG_UUID, tagData.getValue(TagData.UUID));
+//        } else {
+//            if (Constants.DEBUG)
+//                Log.w(LOG_TAG, "Tag not found, deleting link");
+//            m.setValue(Metadata.DELETION_DATE, DateUtilities.now());
+//        }
+//    }
 
 }

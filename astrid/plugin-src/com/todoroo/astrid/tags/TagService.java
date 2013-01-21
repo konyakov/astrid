@@ -155,7 +155,7 @@ public final class TagService {
                     Field.field("mtags." + TagMetadata.TAG_UUID.name).eq(uuid),
                     Field.field("mtags." + Metadata.DELETION_DATE.name).eq(0),
                     criterion);
-            return new QueryTemplate().join(Join.inner(Metadata.TABLE.as("mtags"), Task.UUID.eq(Field.field("mtags." + TagMetadata.TASK_UUID.name))))
+            return new QueryTemplate().join(Join.inner(Metadata.TABLE.as("mtags"), Task.UUID.eq(Field.field("mtags." + Metadata.TASK_UUID.name))))
                     .where(fullCriterion);
         }
 
@@ -178,7 +178,7 @@ public final class TagService {
         String[] emergentTags = getEmergentTagIds();
 
         return new QueryTemplate().where(Criterion.and(
-                Criterion.not(Task.UUID.in(Query.select(TagMetadata.TASK_UUID).from(Metadata.TABLE)
+                Criterion.not(Task.UUID.in(Query.select(Metadata.TASK_UUID).from(Metadata.TABLE)
                         .where(Criterion.and(MetadataCriteria.withKey(TagMetadata.KEY), Metadata.DELETION_DATE.eq(0), Criterion.not(TagMetadata.TAG_UUID.in(emergentTags)))))),
                 TaskCriteria.isActive(),
                 TaskApiDao.TaskCriteria.ownedByMe(),
@@ -258,7 +258,7 @@ public final class TagService {
     public void createLink(Task task, String tagName, String tagUuid) {
         Metadata link = TagMetadata.newTagMetadata(task, tagName, tagUuid);
         if (metadataDao.update(Criterion.and(MetadataCriteria.byTaskAndwithKey(task.getId(), TagMetadata.KEY),
-                    TagMetadata.TASK_UUID.eq(task.getValue(Task.UUID)), TagMetadata.TAG_UUID.eq(tagUuid)), link) <= 0) {
+                    Metadata.TASK_UUID.eq(task.getValue(Task.UUID)), TagMetadata.TAG_UUID.eq(tagUuid)), link) <= 0) {
             metadataDao.createNew(link);
         }
     }
@@ -280,9 +280,9 @@ public final class TagService {
                 name = tagData.getValue(TagData.NAME);
             }
 
-            Metadata link = TagMetadata.newTagMetadata(taskId, taskUuid, name, tagUuid);
+            Metadata link = TagMetadata.newTagMetadata(taskUuid, name, tagUuid);
             if (metadataDao.update(Criterion.and(MetadataCriteria.byTaskAndwithKey(taskId, TagMetadata.KEY),
-                    TagMetadata.TASK_UUID.eq(taskUuid), TagMetadata.TAG_UUID.eq(tagUuid)), link) <= 0) {
+                    Metadata.TASK_UUID.eq(taskUuid), TagMetadata.TAG_UUID.eq(tagUuid)), link) <= 0) {
                 metadataDao.createNew(link);
             }
 
@@ -299,7 +299,7 @@ public final class TagService {
     public void deleteLink(String taskUuid, String tagUuid) {
         Metadata deleteTemplate = new Metadata();
         deleteTemplate.setValue(Metadata.DELETION_DATE, DateUtilities.now());
-        metadataDao.update(Criterion.and(TagMetadata.TASK_UUID.eq(taskUuid), TagMetadata.TAG_UUID.eq(tagUuid)), deleteTemplate);
+        metadataDao.update(Criterion.and(Metadata.TASK_UUID.eq(taskUuid), TagMetadata.TAG_UUID.eq(tagUuid)), deleteTemplate);
     }
 
     /**
@@ -310,7 +310,7 @@ public final class TagService {
     public void deleteLinks(String taskUuid, String[] tagUuids) {
         Metadata deleteTemplate = new Metadata();
         deleteTemplate.setValue(Metadata.DELETION_DATE, DateUtilities.now());
-        metadataDao.update(Criterion.and(TagMetadata.TASK_UUID.eq(taskUuid), TagMetadata.TAG_UUID.in(tagUuids)), deleteTemplate);
+        metadataDao.update(Criterion.and(Metadata.TASK_UUID.eq(taskUuid), TagMetadata.TAG_UUID.in(tagUuids)), deleteTemplate);
     }
 
     /**
@@ -470,7 +470,7 @@ public final class TagService {
     public boolean synchronizeTags(long taskId, String taskUuid, Set<String> tags) {
         HashSet<String> existingLinks = new HashSet<String>();
         TodorooCursor<Metadata> links = metadataDao.query(Query.select(Metadata.PROPERTIES)
-                .where(Criterion.and(TagMetadata.TASK_UUID.eq(taskUuid), Metadata.DELETION_DATE.eq(0))));
+                .where(Criterion.and(Metadata.TASK_UUID.eq(taskUuid), Metadata.DELETION_DATE.eq(0))));
         try {
             for (links.moveToFirst(); !links.isAfterLast(); links.moveToNext()) {
                 Metadata link = new Metadata(links);
@@ -490,7 +490,7 @@ public final class TagService {
             if (existingLinks.contains(tagData.getValue(TagData.UUID))) {
                 existingLinks.remove(tagData.getValue(TagData.UUID));
             } else {
-                Metadata newLink = TagMetadata.newTagMetadata(taskId, taskUuid, tag, tagData.getValue(TagData.UUID));
+                Metadata newLink = TagMetadata.newTagMetadata(taskUuid, tag, tagData.getValue(TagData.UUID));
                 metadataDao.createNew(newLink);
             }
         }
@@ -498,7 +498,7 @@ public final class TagService {
         // Mark as deleted links that don't exist anymore
         Metadata deletedLinkTemplate = new Metadata();
         deletedLinkTemplate.setValue(Metadata.DELETION_DATE, DateUtilities.now());
-        metadataDao.update(Criterion.and(MetadataCriteria.withKey(TagMetadata.KEY), TagMetadata.TASK_UUID.eq(taskUuid),
+        metadataDao.update(Criterion.and(MetadataCriteria.withKey(TagMetadata.KEY), Metadata.TASK_UUID.eq(taskUuid),
                 TagMetadata.TAG_UUID.in(existingLinks.toArray(new Long[existingLinks.size()]))), deletedLinkTemplate);
 
         return true;

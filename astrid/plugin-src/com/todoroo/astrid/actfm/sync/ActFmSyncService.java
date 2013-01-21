@@ -1849,7 +1849,7 @@ public final class ActFmSyncService {
                 String name = tag.getString("name");
                 if(TextUtils.isEmpty(name))
                     continue;
-                Metadata tagMetadata = TagMetadata.newTagMetadata(model.getId(), remoteId, name, tag.getString("id"));
+                Metadata tagMetadata = TagMetadata.newTagMetadata(remoteId, name, tag.getString("id"));
                 metadata.add(tagMetadata);
             }
         }

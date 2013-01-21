@@ -42,6 +42,7 @@ public class Metadata extends AbstractModel {
             TABLE, ID_PROPERTY_NAME);
 
     /** Associated Task */
+    @Deprecated
     public static final LongProperty TASK = new LongProperty(
             TABLE, "task");
 
@@ -82,6 +83,10 @@ public class Metadata extends AbstractModel {
     /** Unixtime metadata was deleted/tombstoned */
     public static final LongProperty DELETION_DATE = new LongProperty(
             TABLE, "deleted");
+
+    /** Task UUID (replaces task id) */
+    public static final StringProperty TASK_UUID = new StringProperty(
+            TABLE, "task_uuid");
 
     /** List of all properties for this model */
     public static final Property<?>[] PROPERTIES = generateProperties(Metadata.class);
