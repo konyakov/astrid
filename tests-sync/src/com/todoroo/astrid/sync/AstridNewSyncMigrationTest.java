@@ -8,7 +8,9 @@ import com.todoroo.andlib.data.Property;
 import com.todoroo.andlib.data.Table;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
+import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
+import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.dao.MetadataDao;
 import com.todoroo.astrid.dao.MetadataDao.MetadataCriteria;
 import com.todoroo.astrid.dao.RemoteModelDao;
@@ -24,11 +26,12 @@ public class AstridNewSyncMigrationTest extends NewSyncTestCase {
 	@Autowired
 	private MetadataDao metadataDao;
 	
-	public void testAstrid44Migration() {
+	public void testAstridSyncMigration() {
 		setupOldDatabase();
 		new AstridNewSyncMigrator().performMigration();
 		assertAllModelsHaveUUID();
 		assertAllTagsHaveTagData();
+		assertAllMetadataHaveCorrectUUID();
 		assertAllMetadataHasAllFields();
 	}
 	
@@ -148,6 +151,33 @@ public class AstridNewSyncMigrationTest extends NewSyncTestCase {
 			}
 		} finally {
 			tagMetadata.close();
+		}
+	}
+	
+	private void assertAllMetadataHaveCorrectUUID() {
+		TodorooCursor<Metadata> metadata = metadataDao.query(Query.select(Metadata.PROPERTIES));
+		try {
+			assertEquals(7, metadata.getCount());
+			Metadata m = new Metadata();
+			for (metadata.moveToFirst(); !metadata.isAfterLast(); metadata.moveToNext()) {
+				m.readFromCursor(metadata);
+				
+				long taskId = m.getValue(Metadata.TASK);
+				String uuid = m.getValue(Metadata.TASK_UUID);
+				
+				assertTrue(taskId > 0);
+				assertFalse(RemoteModel.isUuidEmpty(uuid));
+				
+				TodorooCursor<Task> match = PluginServices.getTaskService().query(Query.select(Task.ID, Task.UUID)
+						.where(Criterion.and(Task.ID.eq(taskId), Task.UUID.eq(uuid))));
+				try {
+					assertEquals(1, match.getCount());
+				} finally {
+					match.close();
+				}
+			}
+		} finally {
+			metadata.close();
 		}
 	}
 	
