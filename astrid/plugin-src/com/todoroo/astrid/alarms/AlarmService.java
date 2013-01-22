@@ -109,8 +109,8 @@ public class AlarmService {
      * @return todoroo cursor. PLEASE CLOSE THIS CURSOR!
      */
     private TodorooCursor<Metadata> getActiveAlarms() {
-        return PluginServices.getMetadataService().query(Query.select(Metadata.ID, Metadata.TASK, AlarmFields.TIME).
-                join(Join.inner(Task.TABLE, Metadata.TASK.eq(Task.ID))).
+        return PluginServices.getMetadataService().query(Query.select(Metadata.ID, Metadata.TASK_UUID, AlarmFields.TIME).
+                join(Join.inner(Task.TABLE, Metadata.TASK_UUID.eq(Task.UUID))).
                 where(Criterion.and(TaskCriteria.isActive(), MetadataCriteria.withKey(AlarmFields.METADATA_KEY))));
     }
 
@@ -120,8 +120,8 @@ public class AlarmService {
      * @return todoroo cursor. PLEASE CLOSE THIS CURSOR!
      */
     private TodorooCursor<Metadata> getActiveAlarmsForTask(long taskId) {
-        return PluginServices.getMetadataService().query(Query.select(Metadata.ID, Metadata.TASK, AlarmFields.TIME).
-                join(Join.inner(Task.TABLE, Metadata.TASK.eq(Task.ID))).
+        return PluginServices.getMetadataService().query(Query.select(Metadata.ID, Metadata.TASK_UUID, AlarmFields.TIME).
+                join(Join.inner(Task.TABLE, Metadata.TASK_UUID.eq(Task.UUID))).
                 where(Criterion.and(TaskCriteria.isActive(),
                         MetadataCriteria.byTaskAndwithKey(taskId, AlarmFields.METADATA_KEY))));
     }
@@ -187,7 +187,11 @@ public class AlarmService {
         if(alarm == null)
             return;
 
-        long taskId = alarm.getValue(Metadata.TASK);
+        String uuid = alarm.getValue(Metadata.TASK_UUID);
+        Task t = PluginServices.getTaskService().fetchByUuid(uuid, Task.ID);
+        if (t == null)
+            return;
+        long taskId = t.getId();
 
         Context context = ContextManager.getContext();
         AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);

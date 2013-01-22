@@ -22,7 +22,6 @@ import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Functions;
-import com.todoroo.andlib.sql.Join;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.billing.BillingConstants;
@@ -31,6 +30,7 @@ import com.todoroo.astrid.dao.MetadataDao.MetadataCriteria;
 import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
 import com.todoroo.astrid.dao.UserDao;
 import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.RemoteModel;
 import com.todoroo.astrid.data.TagData;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.data.User;
@@ -42,7 +42,6 @@ import com.todoroo.astrid.service.TaskService;
 import com.todoroo.astrid.subtasks.SubtasksUpdater;
 import com.todoroo.astrid.sync.SyncResultCallback;
 import com.todoroo.astrid.sync.SyncV2Provider;
-import com.todoroo.astrid.tags.TagMetadata;
 import com.todoroo.astrid.tags.TagService;
 import com.todoroo.astrid.utility.Flags;
 
@@ -115,14 +114,12 @@ public class ActFmSyncV2Provider extends SyncV2Provider {
 
         @Override
         public void pushRemoteModel(Metadata model) {
-            long taskId = model.getValue(Metadata.TASK);
-            Task localTask = taskService.fetchById(taskId, Task.REMOTE_ID);
-            long remoteTaskId = localTask.getValue(Task.REMOTE_ID);
+            String taskUuid = model.getValue(Metadata.TASK_UUID);
 
             if (model.getValue(FileMetadata.DELETION_DATE) > 0)
                 actFmSyncService.deleteAttachment(model);
-            else if (remoteTaskId > 0)
-                actFmSyncService.pushAttachment(remoteTaskId, model);
+            else if (!RemoteModel.isUuidEmpty(taskUuid))
+                actFmSyncService.pushAttachment(taskUuid, model);
         };
 
         public Metadata getRemoteModelInstance(TodorooCursor<Metadata> cursor) {
@@ -571,46 +568,7 @@ public class ActFmSyncV2Provider extends SyncV2Provider {
     }
 
     private void pushQueuedTasksByTag(TagData tagData, SyncResultCallback callback, AtomicInteger finisher) {
-        Long[] ids;
-        TodorooCursor<Metadata> allTagged = metadataService.query(Query.select(Metadata.TASK).where(Criterion.and(Metadata.KEY.eq(TagMetadata.KEY),
-                TagMetadata.TAG_NAME.eqCaseInsensitive(tagData.getValue(TagData.NAME)))));
-        try {
-            ids = new Long[allTagged.getCount()];
-            Metadata m = new Metadata();
-            int i = 0;
-            for (allTagged.moveToFirst(); !allTagged.isAfterLast(); allTagged.moveToNext()) {
-                m.readFromCursor(allTagged);
-                ids[i] = m.getValue(Metadata.TASK);
-                i++;
-            }
-        } finally {
-            allTagged.close();
-        }
-
-        TodorooCursor<Task> taskCursor = taskService.query(Query.select(Task.PROPERTIES)
-                .join(Join.inner(Metadata.TABLE, Criterion.and(Metadata.KEY.eq(TagMetadata.KEY), Metadata.TASK.eq(Task.ID),
-                        TagMetadata.TAG_NAME.eqCaseInsensitive(tagData.getValue(TagData.NAME)))))
-                .where(Criterion.or(
-                        Criterion.and(TaskCriteria.isActive(),
-                                Task.REMOTE_ID.isNull()),
-                        Criterion.and(Task.REMOTE_ID.isNotNull(),
-                                Task.MODIFICATION_DATE.gt(Task.LAST_SYNC)))));
-        try {
-            pushQueued(callback, finisher, taskCursor, true, taskPusher);
-        } finally {
-            taskCursor.close();
-        }
-
-        TodorooCursor<Metadata> filesCursor = metadataService.query(Query.select(Metadata.PROPERTIES)
-                .where(Criterion.and(
-                        MetadataCriteria.withKey(FileMetadata.METADATA_KEY),
-                        FileMetadata.REMOTE_ID.eq(0),
-                        Metadata.TASK.in(ids))));
-        try {
-            pushQueued(callback, finisher, filesCursor, false, filesPusher);
-        } finally {
-            filesCursor.close();
-        }
+        //
     }
 
 }

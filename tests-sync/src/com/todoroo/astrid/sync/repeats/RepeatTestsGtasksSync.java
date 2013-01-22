@@ -83,7 +83,7 @@ public class RepeatTestsGtasksSync extends AbstractSyncRepeatTests<com.google.ap
 
     @Override
     protected com.google.api.services.tasks.model.Task assertTaskExistsRemotely(Task t, long expectedRemoteTime) {
-        Metadata metadata = gtasksMetadataService.getTaskMetadata(t.getId());
+        Metadata metadata = gtasksMetadataService.getTaskMetadata(t.getUuid());
         assertNotNull(metadata);
         String listId = metadata.getValue(GtasksMetadata.LIST_ID);
         String taskId = metadata.getValue(GtasksMetadata.ID);
@@ -109,7 +109,7 @@ public class RepeatTestsGtasksSync extends AbstractSyncRepeatTests<com.google.ap
 
     @Override
     protected void assertTaskCompletedRemotely(Task t) {
-        Metadata metadata = gtasksMetadataService.getTaskMetadata(t.getId());
+        Metadata metadata = gtasksMetadataService.getTaskMetadata(t.getUuid());
         assertNotNull(metadata);
         String listId = metadata.getValue(GtasksMetadata.LIST_ID);
         String taskId = metadata.getValue(GtasksMetadata.ID);

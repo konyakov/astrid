@@ -959,7 +959,7 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
         Criterion tagsJoinCriterion = Criterion.and(
                 Field.field(TAGS_METADATA_JOIN + "." + Metadata.KEY.name).eq(TagMetadata.KEY), //$NON-NLS-1$
                 Field.field(TAGS_METADATA_JOIN + "." + Metadata.DELETION_DATE.name).eq(0),
-                Task.ID.eq(Field.field(TAGS_METADATA_JOIN + "." + Metadata.TASK.name)),
+                Task.UUID.eq(Field.field(TAGS_METADATA_JOIN + "." + Metadata.TASK_UUID.name)),
                 Criterion.not(tagProperty.in(emergentTagIds)));
         if (tagName != null)
             tagsJoinCriterion = Criterion.and(tagsJoinCriterion, Field.field(TAGS_METADATA_JOIN + "." + TagMetadata.TAG_NAME.name).neq(tagName));
@@ -969,7 +969,7 @@ public class TaskListFragment extends ListFragment implements OnScrollListener,
         String joinedQuery =
                 Join.left(Metadata.TABLE.as(TR_METADATA_JOIN),
                         Criterion.and(Field.field(TR_METADATA_JOIN + "." + Metadata.KEY.name).eq(TaskRabbitMetadata.METADATA_KEY), //$NON-NLS-1$
-                                Task.ID.eq(Field.field(TR_METADATA_JOIN + "." + Metadata.TASK.name)))).toString() //$NON-NLS-1$
+                                Task.UUID.eq(Field.field(TR_METADATA_JOIN + "." + Metadata.TASK_UUID.name)))).toString() //$NON-NLS-1$
                 + Join.left(Metadata.TABLE.as(TAGS_METADATA_JOIN),
                         tagsJoinCriterion).toString() //$NON-NLS-1$
                 + filter.getSqlQuery();

@@ -5,6 +5,8 @@
  */
 package com.todoroo.astrid.data;
 
+import android.text.TextUtils;
+
 import com.todoroo.andlib.data.AbstractModel;
 import com.todoroo.andlib.data.Property.LongProperty;
 import com.todoroo.andlib.data.Property.StringProperty;
@@ -49,4 +51,24 @@ abstract public class RemoteModel extends AbstractModel {
 
     /** constant value for no uuid */
     public static final String NO_UUID = "0"; //$NON-NLS-1$
+
+    public static boolean isUuidEmpty(String uuid) {
+        return NO_UUID.equals(uuid) || TextUtils.isEmpty(uuid);
+    }
+
+    /**
+     * Utility method to get the identifier of the model, if it exists.
+     *
+     * @return {@value #NO_ID} if this model was not added to the database
+     */
+    abstract public String getUuid();
+
+    protected String getUuidHelper(StringProperty uuid) {
+        if(setValues != null && setValues.containsKey(uuid.name))
+            return setValues.getAsString(uuid.name);
+        else if(values != null && values.containsKey(uuid.name))
+            return values.getAsString(uuid.name);
+        else
+            return NO_UUID;
+    }
 }

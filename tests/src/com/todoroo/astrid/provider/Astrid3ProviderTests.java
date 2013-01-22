@@ -324,7 +324,7 @@ public class Astrid3ProviderTests extends DatabaseTestCase {
         uri = Metadata.CONTENT_URI;
 
         values.clear();
-        values.put(Metadata.TASK.name, 1);
+        values.put(Metadata.TASK_UUID.name, "1");
         values.put(Metadata.KEY.name, "sizes");
         values.put(age.name, 50);
         values.put(size.name, "large");

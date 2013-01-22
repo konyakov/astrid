@@ -171,6 +171,11 @@ public class Update extends RemoteModel {
         return getIdHelper(ID);
     };
 
+    @Override
+    public String getUuid() {
+        return getUuidHelper(UUID);
+    }
+
     // --- parcelable helpers
 
     private static final Creator<Update> CREATOR = new ModelCreator<Update>(Update.class);

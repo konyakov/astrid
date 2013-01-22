@@ -89,22 +89,22 @@ public class MetadataDaoTests extends DatabaseTestCase {
         // create "happy"
         Metadata metadata = new Metadata();
         metadata.setValue(Metadata.KEY, "with1");
-        metadata.setValue(Metadata.TASK, 1L);
+        metadata.setValue(Metadata.TASK_UUID, "1");
         assertTrue(metadataDao.persist(metadata));
 
         metadata = new Metadata();
         metadata.setValue(Metadata.KEY, "with2");
-        metadata.setValue(Metadata.TASK, 2L);
+        metadata.setValue(Metadata.TASK_UUID, "2");
         assertTrue(metadataDao.persist(metadata));
 
         metadata = new Metadata();
         metadata.setValue(Metadata.KEY, "with1");
-        metadata.setValue(Metadata.TASK, 1L);
+        metadata.setValue(Metadata.TASK_UUID, "1");
         assertTrue(metadataDao.persist(metadata));
 
 
         TodorooCursor<Metadata> cursor = metadataDao.query(
-                Query.select(KEYS).where(MetadataCriteria.byTask(1)));
+                Query.select(KEYS).where(MetadataCriteria.byTask("1")));
         assertEquals(2, cursor.getCount());
         cursor.moveToFirst();
         metadata.readFromCursor(cursor);
@@ -115,11 +115,11 @@ public class MetadataDaoTests extends DatabaseTestCase {
         cursor.close();
 
         cursor = metadataDao.query(
-                Query.select(KEYS).where(MetadataCriteria.byTask(3)));
+                Query.select(KEYS).where(MetadataCriteria.byTask("3")));
         assertEquals(0, cursor.getCount());
         cursor.close();
 
-        int deleted = metadataDao.deleteWhere(MetadataCriteria.byTask(1));
+        int deleted = metadataDao.deleteWhere(MetadataCriteria.byTask("1"));
         assertEquals(2, deleted);
         cursor = metadataDao.query(
                 Query.select(KEYS));
@@ -150,17 +150,17 @@ public class MetadataDaoTests extends DatabaseTestCase {
 
         Metadata metadata = new Metadata();
         metadata.setValue(Metadata.KEY, "with1");
-        metadata.setValue(Metadata.TASK, task1.getId());
+        metadata.setValue(Metadata.TASK_UUID, task1.getUuid());
         assertTrue(metadataDao.persist(metadata));
 
         metadata = new Metadata();
         metadata.setValue(Metadata.KEY, "with2");
-        metadata.setValue(Metadata.TASK, task2.getId());
+        metadata.setValue(Metadata.TASK_UUID, task2.getUuid());
         assertTrue(metadataDao.persist(metadata));
 
         metadata = new Metadata();
         metadata.setValue(Metadata.KEY, "with3");
-        metadata.setValue(Metadata.TASK, task3.getId());
+        metadata.setValue(Metadata.TASK_UUID, task3.getUuid());
         assertTrue(metadataDao.persist(metadata));
 
         // fetch with tasks and corresponding metadata
@@ -168,7 +168,7 @@ public class MetadataDaoTests extends DatabaseTestCase {
         assertEquals(0, cursor.getCount());
         cursor.close();
 
-        long task2Id = task2.getId();
+        String task2Uuid = task2.getUuid();
         taskDao.delete(task2.getId());
 
         // note: we should not have any dangling, since deleting a task
@@ -179,7 +179,7 @@ public class MetadataDaoTests extends DatabaseTestCase {
 
         metadata = new Metadata();
         metadata.setValue(Metadata.KEY, "with2");
-        metadata.setValue(Metadata.TASK, task2Id);
+        metadata.setValue(Metadata.TASK_UUID, task2Uuid);
         assertTrue(metadataDao.persist(metadata));
 
         // but if we simulate something bad happening by creating

@@ -36,8 +36,8 @@ public class MetadataApiDao extends ContentResolverDao<Metadata> {
     public static class MetadataCriteria {
 
         /** Returns all metadata associated with a given task */
-        public static Criterion byTask(long taskId) {
-            return Metadata.TASK.eq(taskId);
+        public static Criterion byTask(String taskUuid) {
+            return Metadata.TASK_UUID.eq(taskUuid);
         }
 
         /** Returns all metadata associated with a given key */
@@ -46,8 +46,8 @@ public class MetadataApiDao extends ContentResolverDao<Metadata> {
         }
 
         /** Returns all metadata associated with a given key */
-        public static Criterion byTaskAndwithKey(long taskId, String key) {
-            return Criterion.and(withKey(key), byTask(taskId));
+        public static Criterion byTaskAndwithKey(String taskUuid, String key) {
+            return Criterion.and(withKey(key), byTask(taskUuid));
         }
 
     }
@@ -61,11 +61,11 @@ public class MetadataApiDao extends ContentResolverDao<Metadata> {
      * @param metadata list of new metadata items to save
      * @param metadataCriteria criteria to load data for comparison from metadata
      */
-    public void synchronizeMetadata(long taskId, ArrayList<Metadata> metadata,
+    public void synchronizeMetadata(String taskId, ArrayList<Metadata> metadata,
             Criterion metadataCriteria) {
         HashSet<ContentValues> newMetadataValues = new HashSet<ContentValues>();
         for(Metadata metadatum : metadata) {
-            metadatum.setValue(Metadata.TASK, taskId);
+            metadatum.setValue(Metadata.TASK_UUID, taskId);
             metadatum.clearValue(Metadata.ID);
             newMetadataValues.add(metadatum.getMergedValues());
         }

@@ -60,7 +60,7 @@ public class GtasksSyncOnSaveTest extends DatabaseTestCase {
 
         AndroidUtilities.sleepDeep(TIME_TO_WAIT);
 
-        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getId());
+        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getUuid());
         assertEquals(title, remoteTask.getTitle());
         return localTask;
     }
@@ -71,8 +71,8 @@ public class GtasksSyncOnSaveTest extends DatabaseTestCase {
         return localTask;
     }
 
-    private com.google.api.services.tasks.model.Task getRemoteTaskForLocalId(long localId) throws IOException {
-        Metadata gtasksMetadata = gtasksMetadataService.getTaskMetadata(localId);
+    private com.google.api.services.tasks.model.Task getRemoteTaskForLocalId(String uuid) throws IOException {
+        Metadata gtasksMetadata = gtasksMetadataService.getTaskMetadata(uuid);
         assertNotNull(gtasksMetadata);
         com.google.api.services.tasks.model.Task remoteTask = gtasksService.getGtask(DEFAULT_LIST, gtasksMetadata.getValue(GtasksMetadata.ID));
         assertNotNull(remoteTask);
@@ -89,7 +89,7 @@ public class GtasksSyncOnSaveTest extends DatabaseTestCase {
 
         AndroidUtilities.sleepDeep(TIME_TO_WAIT);
 
-        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getId());
+        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getUuid());
         assertEquals(newTitle, remoteTask.getTitle());
     }
 
@@ -103,7 +103,7 @@ public class GtasksSyncOnSaveTest extends DatabaseTestCase {
 
         AndroidUtilities.sleepDeep(TIME_TO_WAIT);
 
-        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getId());
+        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getUuid());
         assertEquals(dueDate, GtasksApiUtilities.gtasksDueTimeToUnixTime(remoteTask.getDue(), 0));
     }
 
@@ -117,7 +117,7 @@ public class GtasksSyncOnSaveTest extends DatabaseTestCase {
 
         AndroidUtilities.sleepDeep(TIME_TO_WAIT);
 
-        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getId());
+        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getUuid());
         assertEquals(notes, remoteTask.getNotes());
     }
 
@@ -131,7 +131,7 @@ public class GtasksSyncOnSaveTest extends DatabaseTestCase {
 
         AndroidUtilities.sleepDeep(TIME_TO_WAIT);
 
-        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getId());
+        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getUuid());
         assertEquals("completed", remoteTask.getStatus());
         assertEquals(completionDate, GtasksApiUtilities.gtasksCompletedTimeToUnixTime(remoteTask.getCompleted(), 0));
     }
@@ -146,7 +146,7 @@ public class GtasksSyncOnSaveTest extends DatabaseTestCase {
 
         AndroidUtilities.sleepDeep(TIME_TO_WAIT);
 
-        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getId());
+        com.google.api.services.tasks.model.Task remoteTask = getRemoteTaskForLocalId(localTask.getUuid());
         assertTrue(remoteTask.getDeleted());
         assertFalse(taskWithTitleExists(localTask.getValue(Task.TITLE)));
     }

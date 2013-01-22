@@ -432,7 +432,7 @@ public class GtasksNewSyncTest extends DatabaseTestCase {
 
     private com.google.api.services.tasks.model.Task assertTaskExistsRemotely(Task localTask, String title) {
         //Get the corresponding remote id for a local task
-        Metadata metadata = gtasksMetadataService.getTaskMetadata(localTask.getId());
+        Metadata metadata = gtasksMetadataService.getTaskMetadata(localTask.getValue(Task.UUID));
         String taskId = metadata.getValue(GtasksMetadata.ID);
         String listId = metadata.getValue(GtasksMetadata.LIST_ID);
 
@@ -453,10 +453,10 @@ public class GtasksNewSyncTest extends DatabaseTestCase {
     }
 
     private Task assertTaskExistsLocally(com.google.api.services.tasks.model.Task remoteTask, String title) {
-        long localId = localIdForTask(remoteTask);
+        String uuid = uuidForTask(remoteTask);
 
         //Fetch the local task from the database
-        Task localTask = taskService.fetchById(localId, Task.PROPERTIES);
+        Task localTask = taskService.fetchByUuid(uuid, Task.PROPERTIES);
 
         assertNotNull(localTask);
         assertEquals(title, remoteTask.getTitle());
@@ -472,14 +472,14 @@ public class GtasksNewSyncTest extends DatabaseTestCase {
         return gtasksService.getGtask(DEFAULT_LIST, remoteTask.getId());
     }
 
-    private long localIdForTask(com.google.api.services.tasks.model.Task remoteTask) {
-        TodorooCursor<Metadata> cursor = metadataService.query(Query.select(Metadata.TASK).
+    private String uuidForTask(com.google.api.services.tasks.model.Task remoteTask) {
+        TodorooCursor<Metadata> cursor = metadataService.query(Query.select(Metadata.TASK_UUID).
                 where(Criterion.and(Metadata.KEY.eq(GtasksMetadata.METADATA_KEY), GtasksMetadata.ID.eq(remoteTask.getId()))));
         try {
             assertEquals(1, cursor.getCount());
 
             cursor.moveToFirst();
-            return cursor.get(Metadata.TASK);
+            return cursor.get(Metadata.TASK_UUID);
         } finally {
             cursor.close();
         }

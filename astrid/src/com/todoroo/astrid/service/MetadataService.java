@@ -92,7 +92,7 @@ public class MetadataService {
      * @param metadata
      */
     public boolean save(Metadata metadata) {
-        if(!metadata.containsNonNullValue(Metadata.TASK))
+        if(!metadata.containsNonNullValue(Metadata.TASK_UUID))
             throw new IllegalArgumentException("metadata needs to be attached to a task: " + metadata.getMergedValues()); //$NON-NLS-1$
 
         return metadataDao.persist(metadata);
@@ -105,12 +105,12 @@ public class MetadataService {
      * @param metadataKeys
      * @return true if there were changes
      */
-    public boolean synchronizeMetadata(long taskId, ArrayList<Metadata> metadata,
+    public boolean synchronizeMetadata(String taskUuid, ArrayList<Metadata> metadata,
             Criterion metadataCriterion, SynchronizeMetadataCallback callback, boolean hardDelete) {
         boolean dirty = false;
         HashSet<ContentValues> newMetadataValues = new HashSet<ContentValues>();
         for(Metadata metadatum : metadata) {
-            metadatum.setValue(Metadata.TASK, taskId);
+            metadatum.setValue(Metadata.TASK_UUID, taskUuid);
             metadatum.clearValue(Metadata.CREATION_DATE);
             metadatum.clearValue(Metadata.ID);
 
@@ -123,7 +123,7 @@ public class MetadataService {
         }
 
         Metadata item = new Metadata();
-        TodorooCursor<Metadata> cursor = metadataDao.query(Query.select(Metadata.PROPERTIES).where(Criterion.and(MetadataCriteria.byTask(taskId),
+        TodorooCursor<Metadata> cursor = metadataDao.query(Query.select(Metadata.PROPERTIES).where(Criterion.and(MetadataCriteria.byTask(taskUuid),
                 metadataCriterion)));
         try {
             // try to find matches within our metadata list

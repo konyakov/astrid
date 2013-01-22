@@ -51,8 +51,8 @@ public class MetadataDao extends DatabaseDao<Metadata> {
     public static class MetadataCriteria {
 
     	/** Returns all metadata associated with a given task */
-    	public static Criterion byTask(long taskId) {
-    	    return Metadata.TASK.eq(taskId);
+    	public static Criterion byTask(String taskUuid) {
+    	    return Metadata.TASK_UUID.eq(taskUuid);
     	}
 
     	/** Returns all metadata associated with a given key */
@@ -61,8 +61,8 @@ public class MetadataDao extends DatabaseDao<Metadata> {
     	}
 
     	/** Returns all metadata associated with a given key */
-    	public static Criterion byTaskAndwithKey(long taskId, String key) {
-    	    return Criterion.and(withKey(key), byTask(taskId));
+    	public static Criterion byTaskAndwithKey(String taskUuid, String key) {
+    	    return Criterion.and(withKey(key), byTask(taskUuid));
     	}
 
     }
@@ -92,7 +92,7 @@ public class MetadataDao extends DatabaseDao<Metadata> {
      */
     public TodorooCursor<Metadata> fetchDangling(Property<?>... properties) {
         Query sql = Query.select(properties).from(Metadata.TABLE).join(Join.left(Task.TABLE,
-                Metadata.TASK.eq(Task.ID))).where(Task.TITLE.isNull());
+                Metadata.TASK_UUID.eq(Task.UUID))).where(Task.TITLE.isNull());
         Cursor cursor = database.rawQuery(sql.toString(), null);
         return new TodorooCursor<Metadata>(cursor, properties);
     }

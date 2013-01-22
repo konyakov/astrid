@@ -85,14 +85,14 @@ public class GtasksTaskListUpdaterTest extends DatabaseTestCase {
     // --- helpers
 
     private void thenExpectMetadataIndentAndOrder(Task task, long order, int indent) {
-        Metadata metadata = gtasksMetadataService.getTaskMetadata(task.getId());
+        Metadata metadata = gtasksMetadataService.getTaskMetadata(task.getUuid());
         assertNotNull("metadata was found", metadata);
         assertEquals("order", order, metadata.getValue(GtasksMetadata.ORDER).longValue());
         assertEquals("indentation", indent, (int)metadata.getValue(GtasksMetadata.INDENT));
     }
 
     private void thenExpectMetadataParent(Task task, Task expectedParent) {
-        Metadata metadata = gtasksMetadataService.getTaskMetadata(task.getId());
+        Metadata metadata = gtasksMetadataService.getTaskMetadata(task.getUuid());
         long parent = metadata.getValue(GtasksMetadata.PARENT_TASK);
         if(expectedParent == null)
             assertEquals("Task " + task.getValue(Task.TITLE) + " parent none", 0, parent);

@@ -852,13 +852,13 @@ public final class ActFmSyncService {
                 waitUntilEmpty.close();
                 taskPushThreads.incrementAndGet();
                 try {
-                    Task t = taskDao.fetch(fileMetadata.getValue(Metadata.TASK), Task.REMOTE_ID);
-                    if (t == null || t.getValue(Task.REMOTE_ID) == null || t.getValue(Task.REMOTE_ID) <= 0)
+                    Task t = taskDao.fetchByUuid(fileMetadata.getValue(Metadata.TASK_UUID), Task.UUID);
+                    if (t == null || RemoteModel.isUuidEmpty(t.getValue(Task.UUID)))
                         return;
                     if (fileMetadata.getValue(FileMetadata.DELETION_DATE) > 0)
                         deleteAttachment(fileMetadata);
                     else
-                        pushAttachment(t.getValue(Task.REMOTE_ID), fileMetadata);
+                        pushAttachment(t.getValue(Task.UUID), fileMetadata);
                 } finally {
                     if (taskPushThreads.decrementAndGet() == 0) {
                         waitUntilEmpty.open();
@@ -873,11 +873,11 @@ public final class ActFmSyncService {
      * @param remoteTaskId
      * @param fileMetadata
      */
-    public void pushAttachment(long remoteTaskId, Metadata fileMetadata) {
+    public void pushAttachment(String remoteTaskId, Metadata fileMetadata) {
         if (!ActFmPreferenceService.isPremiumUser())
             return;
 
-        if (!fileMetadata.containsNonNullValue(FileMetadata.FILE_PATH) || remoteTaskId <= 0)
+        if (!fileMetadata.containsNonNullValue(FileMetadata.FILE_PATH) || RemoteModel.isUuidEmpty(remoteTaskId))
             return;
 
         File f = new File(fileMetadata.getValue(FileMetadata.FILE_PATH));
@@ -1540,7 +1540,7 @@ public final class ActFmSyncService {
         private void titleMatchOnGoogleTask(Task remote) {
             String title = remote.getValue(Task.TITLE);
             TodorooCursor<Task> match = taskService.query(Query.select(Task.ID)
-                    .join(Join.inner(Metadata.TABLE, Criterion.and(Metadata.KEY.eq(GtasksMetadata.METADATA_KEY), Metadata.TASK.eq(Task.ID))))
+                    .join(Join.inner(Metadata.TABLE, Criterion.and(Metadata.KEY.eq(GtasksMetadata.METADATA_KEY), Metadata.TASK_UUID.eq(Task.UUID))))
                     .where(Criterion.and(Task.TITLE.eq(title), Task.REMOTE_ID.isNull())));
             try {
                 if (match.getCount() > 0) {

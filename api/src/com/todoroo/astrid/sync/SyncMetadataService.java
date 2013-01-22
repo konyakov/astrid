@@ -71,9 +71,9 @@ abstract public class SyncMetadataService<TYPE extends SyncContainer> {
      * @return cursor
      */
     private TodorooCursor<Metadata> getRemoteTaskMetadata() {
-        return metadataDao.query(Query.select(Metadata.TASK).where(
+        return metadataDao.query(Query.select(Metadata.TASK_UUID).where(
                 Criterion.and(MetadataCriteria.withKey(getMetadataKey()),
-                getMetadataWithRemoteId())).orderBy(Order.asc(Metadata.TASK)));
+                getMetadataWithRemoteId())).orderBy(Order.asc(Metadata.TASK_UUID)));
     }
 
     /**
@@ -178,7 +178,7 @@ abstract public class SyncMetadataService<TYPE extends SyncContainer> {
     public void findLocalMatch(TYPE remoteTask) {
         if(remoteTask.task.getId() != Task.NO_ID)
             return;
-        TodorooCursor<Metadata> cursor = metadataDao.query(Query.select(Metadata.TASK).
+        TodorooCursor<Metadata> cursor = metadataDao.query(Query.select(Metadata.TASK_UUID).
                 where(Criterion.and(MetadataCriteria.withKey(getMetadataKey()),
                         getLocalMatchCriteria(remoteTask))));
         try {
@@ -198,7 +198,7 @@ abstract public class SyncMetadataService<TYPE extends SyncContainer> {
     public void saveTaskAndMetadata(TYPE task) {
         task.prepareForSaving();
         taskDao.save(task.task);
-        metadataDao.synchronizeMetadata(task.task.getId(), task.metadata,
+        metadataDao.synchronizeMetadata(task.task.getValue(Task.UUID), task.metadata,
                 getMetadataCriteria());
     }
 
@@ -212,7 +212,7 @@ abstract public class SyncMetadataService<TYPE extends SyncContainer> {
 
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();
         TodorooCursor<Metadata> metadataCursor = metadataDao.query(Query.select(Metadata.PROPERTIES).
-                where(Criterion.and(MetadataCriteria.byTask(task.getId()),
+                where(Criterion.and(MetadataCriteria.byTask(task.getValue(Task.UUID)),
                         getMetadataCriteria())));
         try {
             for(metadataCursor.moveToFirst(); !metadataCursor.isAfterLast(); metadataCursor.moveToNext()) {
@@ -229,7 +229,7 @@ abstract public class SyncMetadataService<TYPE extends SyncContainer> {
      * Reads metadata out of a task
      * @return null if no metadata found
      */
-    public Metadata getTaskMetadata(long taskId) {
+    public Metadata getTaskMetadata(String taskId) {
         TodorooCursor<Metadata> cursor = metadataDao.query(Query.select(Metadata.PROPERTIES).where(
                 MetadataCriteria.byTaskAndwithKey(taskId, getMetadataKey())));
         try {

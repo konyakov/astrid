@@ -103,16 +103,16 @@ public class Database extends AbstractDatabase {
     @Override
     protected synchronized void onCreateTables() {
         StringBuilder sql = new StringBuilder();
-        sql.append("CREATE INDEX IF NOT EXISTS md_tid ON ").
+        sql.append("CREATE INDEX IF NOT EXISTS md_tuuid ON ").
         append(Metadata.TABLE).append('(').
-        append(Metadata.TASK.name).
+        append(Metadata.TASK_UUID.name).
         append(')');
         database.execSQL(sql.toString());
         sql.setLength(0);
 
-        sql.append("CREATE INDEX IF NOT EXISTS md_tkid ON ").
+        sql.append("CREATE INDEX IF NOT EXISTS md_tkuuid ON ").
         append(Metadata.TABLE).append('(').
-        append(Metadata.TASK.name).append(',').
+        append(Metadata.TASK_UUID.name).append(',').
         append(Metadata.KEY.name).
         append(')');
         database.execSQL(sql.toString());

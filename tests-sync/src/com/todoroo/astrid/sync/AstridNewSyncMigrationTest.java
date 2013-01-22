@@ -143,7 +143,7 @@ public class AstridNewSyncMigrationTest extends NewSyncTestCase {
 			for (tagMetadata.moveToFirst(); !tagMetadata.isAfterLast(); tagMetadata.moveToNext()) {
 				m.readFromCursor(tagMetadata);
 				assertTrue(!TextUtils.isEmpty(m.getValue(TagMetadata.TAG_NAME)));
-				assertTrue(!RemoteModel.NO_UUID.equals(m.getValue(TagMetadata.TASK_UUID)));
+				assertTrue(!RemoteModel.NO_UUID.equals(m.getValue(Metadata.TASK_UUID)));
 				assertTrue(!RemoteModel.NO_UUID.equals(m.getValue(TagMetadata.TAG_UUID)));
 			}
 		} finally {

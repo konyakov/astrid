@@ -790,7 +790,7 @@ public class TaskAdapter extends CursorAdapter implements Filterable {
                     fileIdProperty)
                     .join(Join.left(Metadata.TABLE.as(METADATA_JOIN),
                             Criterion.and(Field.field(METADATA_JOIN + "." + Metadata.KEY.name).eq(FileMetadata.METADATA_KEY),
-                                    Task.ID.eq(Field.field(METADATA_JOIN + "." + Metadata.TASK.name))))).withQueryTemplate(groupedQuery);
+                                    Task.UUID.eq(Field.field(METADATA_JOIN + "." + Metadata.TASK_UUID.name))))).withQueryTemplate(groupedQuery);
             final TodorooCursor<Task> fetchCursor = taskService.query(q);
 
             try {

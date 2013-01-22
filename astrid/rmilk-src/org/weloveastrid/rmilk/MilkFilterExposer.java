@@ -59,7 +59,7 @@ public class MilkFilterExposer extends BroadcastReceiver implements AstridFilter
         values.put(MilkTaskFields.TASK_ID.name, 0);
         values.put(MilkTaskFields.REPEATING.name, 0);
         Filter filter = new Filter(listName, title, new QueryTemplate().join(
-                Join.left(Metadata.TABLE, Task.ID.eq(Metadata.TASK))).where(Criterion.and(
+                Join.left(Metadata.TABLE, Task.UUID.eq(Metadata.TASK_UUID))).where(Criterion.and(
                         MetadataCriteria.withKey(MilkTaskFields.METADATA_KEY),
                         TaskCriteria.activeAndVisible(),
                         MilkTaskFields.LIST_ID.eq(list.getValue(MilkListFields.REMOTE_ID)))),

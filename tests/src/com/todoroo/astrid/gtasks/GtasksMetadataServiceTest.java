@@ -127,7 +127,7 @@ public class GtasksMetadataServiceTest extends DatabaseTestCase {
     }
 
     private void whenSearchForMetadata() {
-        metadata = gtasksMetadataService.getTaskMetadata(task.getId());
+        metadata = gtasksMetadataService.getTaskMetadata(task.getUuid());
     }
 
     private Task taskWithMetadata(String id) {
@@ -137,7 +137,7 @@ public class GtasksMetadataServiceTest extends DatabaseTestCase {
         Metadata metadata = GtasksMetadata.createEmptyMetadata(task.getId());
         if(id != null)
             metadata.setValue(GtasksMetadata.ID, id);
-        metadata.setValue(Metadata.TASK, task.getId());
+        metadata.setValue(Metadata.TASK_UUID, task.getUuid());
         PluginServices.getMetadataService().save(metadata);
         return task;
     }

@@ -105,17 +105,8 @@ public class TaskService {
      * @param properties
      * @return item, or null if it doesn't exist
      */
-    public Task fetchByUUID(String uuid, Property<?>... properties) {
-        TodorooCursor<Task> task = query(Query.select(properties).where(Task.UUID.eq(uuid)));
-        try {
-            if (task.getCount() > 0) {
-                task.moveToFirst();
-                return new Task(task);
-            }
-            return null;
-        } finally {
-            task.close();
-        }
+    public Task fetchByUuid(String uuid, Property<?>... properties) {
+        return taskDao.fetchByUuid(uuid, properties);
     }
 
     /**
@@ -173,14 +164,14 @@ public class TaskService {
         newTask.clearValue(Task.ID);
         newTask.clearValue(Task.UUID);
         TodorooCursor<Metadata> cursor = metadataDao.query(
-                Query.select(Metadata.PROPERTIES).where(MetadataCriteria.byTask(task.getId())));
+                Query.select(Metadata.PROPERTIES).where(MetadataCriteria.byTask(task.getUuid())));
         try {
             if(cursor.getCount() > 0) {
                 Metadata metadata = new Metadata();
                 newTask.putTransitory(SyncFlags.ACTFM_SUPPRESS_SYNC, true);
                 newTask.putTransitory(SyncFlags.GTASKS_SUPPRESS_SYNC, true);
                 taskDao.save(newTask);
-                long newId = newTask.getId();
+                String newId = newTask.getUuid();
                 for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                     metadata.readFromCursor(cursor);
 
@@ -198,7 +189,7 @@ public class TaskService {
                     if(OpencrxCoreUtils.OPENCRX_ACTIVITY_METADATA_KEY.equals(metadata.getValue(Metadata.KEY)))
                         metadata.setValue(OpencrxCoreUtils.ACTIVITY_ID, 0L);
 
-                    metadata.setValue(Metadata.TASK, newId);
+                    metadata.setValue(Metadata.TASK_UUID, newId);
                     metadata.clearValue(Metadata.ID);
                     metadataDao.createNew(metadata);
                 }
@@ -547,7 +538,7 @@ public class TaskService {
 
         if (forMetadata != null && forMetadata.size() > 0) {
             Metadata metadata = new Metadata();
-            metadata.setValue(Metadata.TASK, task.getId());
+            metadata.setValue(Metadata.TASK_UUID, task.getUuid());
             metadata.mergeWith(forMetadata);
             if (TagMetadata.KEY.equals(metadata.getValue(Metadata.KEY))) {
                 if (metadata.containsNonNullValue(TagMetadata.TAG_UUID) && !RemoteModel.NO_UUID.equals(metadata.getValue(TagMetadata.TAG_UUID))) {
