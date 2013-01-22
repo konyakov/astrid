@@ -227,9 +227,9 @@ public class OpencrxControlSet extends PopupControlSet {
     protected void readFromTaskOnInitialize() {
 
 
-        Metadata metadata = getTaskMetadata(model.getId());
+        Metadata metadata = getTaskMetadata(model.getUuid());
         if(metadata == null)
-            metadata = OpencrxCoreUtils.INSTANCE.newMetadata(model.getId());
+            metadata = OpencrxCoreUtils.INSTANCE.newMetadata(model.getUuid());
 
         // Fill the dashboard-spinner and set the current dashboard
         long dashboardId = OpencrxCoreUtils.INSTANCE.getDefaultCreator();
@@ -342,10 +342,10 @@ public class OpencrxControlSet extends PopupControlSet {
 
     @Override
     protected String writeToModelAfterInitialized(Task task) {
-        Metadata metadata = getTaskMetadata(task.getId());
+        Metadata metadata = getTaskMetadata(task.getUuid());
         try {
             if (metadata == null) {
-                metadata = OpencrxCoreUtils.INSTANCE.newMetadata(task.getId());
+                metadata = OpencrxCoreUtils.INSTANCE.newMetadata(task.getUuid());
             }
 
             OpencrxActivityCreator dashboard = (OpencrxActivityCreator) creatorSelector.getSelectedItem();
@@ -372,7 +372,7 @@ public class OpencrxControlSet extends PopupControlSet {
      * Reads metadata out of a task
      * @return null if no metadata found
      */
-    private Metadata getTaskMetadata(long taskId) {
+    private Metadata getTaskMetadata(String taskId) {
         TodorooCursor<Metadata> cursor = metadataService.query(Query.select(Metadata.PROPERTIES).where(
                                                                 MetadataCriteria.byTaskAndwithKey(taskId, OpencrxCoreUtils.OPENCRX_ACTIVITY_METADATA_KEY))
                                                          );

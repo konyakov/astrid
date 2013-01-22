@@ -368,7 +368,7 @@ public class QuickAddBar extends LinearLayout {
                 voiceRecognizer.convert(path);
                 currentVoiceFile = null;
 
-                Metadata fileMetadata = FileMetadata.createNewFileMetadata(task.getId(), path, nameRef.get(), FileMetadata.FILE_TYPE_AUDIO + "m4a");
+                Metadata fileMetadata = FileMetadata.createNewFileMetadata(task.getUuid(), path, nameRef.get(), FileMetadata.FILE_TYPE_AUDIO + "m4a");
                 metadataService.save(fileMetadata);
             }
 

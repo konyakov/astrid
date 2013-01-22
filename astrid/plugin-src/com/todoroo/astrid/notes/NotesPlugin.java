@@ -40,7 +40,7 @@ public class NotesPlugin extends BroadcastReceiver {
         if(task.containsNonNullValue(Task.NOTES) && !TextUtils.isEmpty(task.getValue(Task.NOTES)))
             return true;
 
-        if(PluginServices.getMetadataService().hasMetadata(task.getId(), NoteMetadata.METADATA_KEY))
+        if(PluginServices.getMetadataService().hasMetadata(task.getUuid(), NoteMetadata.METADATA_KEY))
             return true;
 
         return false;

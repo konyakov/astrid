@@ -151,7 +151,7 @@ public final class GtasksMetadataService extends SyncMetadataService<GtasksTaskC
         TodorooCursor<Metadata> cursor = PluginServices.getMetadataService().query(query);
         try {
             for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                long taskId = cursor.get(Metadata.TASK);
+                String taskId = cursor.get(Metadata.TASK_UUID);
                 Metadata metadata = getTaskMetadata(taskId);
                 if(metadata == null)
                     continue;
@@ -172,7 +172,8 @@ public final class GtasksMetadataService extends SyncMetadataService<GtasksTaskC
         String parent = null;
         if (gtasksMetadata.containsNonNullValue(GtasksMetadata.PARENT_TASK)) {
             long parentId = gtasksMetadata.getValue(GtasksMetadata.PARENT_TASK);
-            Metadata parentMetadata = getTaskMetadata(parentId);
+            String uuid = PluginServices.getTaskDao().uuidForLocalId(parentId);
+            Metadata parentMetadata = getTaskMetadata(uuid);
             if (parentMetadata != null && parentMetadata.containsNonNullValue(GtasksMetadata.ID)) {
                 parent = parentMetadata.getValue(GtasksMetadata.ID);
                 if (TextUtils.isEmpty(parent)) {
@@ -195,7 +196,7 @@ public final class GtasksMetadataService extends SyncMetadataService<GtasksTaskC
         final AtomicReference<String> sibling = new AtomicReference<String>();
         OrderedListIterator iterator = new OrderedListIterator() {
             @Override
-            public void processTask(long taskId, Metadata metadata) {
+            public void processTask(String taskId, Metadata metadata) {
                 Task t = taskDao.fetch(taskId, Task.TITLE, Task.DELETION_DATE);
                 if (t == null || t.isDeleted()) return;
                 int currIndent = metadata.getValue(GtasksMetadata.INDENT).intValue();

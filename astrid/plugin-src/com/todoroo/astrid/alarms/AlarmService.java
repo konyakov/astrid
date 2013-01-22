@@ -60,10 +60,10 @@ public class AlarmService {
      *
      * @param taskId
      */
-    public TodorooCursor<Metadata> getAlarms(long taskId) {
+    public TodorooCursor<Metadata> getAlarms(String taskUuid) {
         return PluginServices.getMetadataService().query(Query.select(
                 Metadata.PROPERTIES).where(MetadataCriteria.byTaskAndwithKey(
-                        taskId, AlarmFields.METADATA_KEY)).orderBy(Order.asc(AlarmFields.TIME)));
+                        taskUuid, AlarmFields.METADATA_KEY)).orderBy(Order.asc(AlarmFields.TIME)));
     }
 
     /**
@@ -72,7 +72,7 @@ public class AlarmService {
      * @param tags
      * @return true if data was changed
      */
-    public boolean synchronizeAlarms(final long taskId, LinkedHashSet<Long> alarms) {
+    public boolean synchronizeAlarms(final long taskId, final String taskUuid, LinkedHashSet<Long> alarms) {
         MetadataService service = PluginServices.getMetadataService();
 
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();
@@ -87,7 +87,7 @@ public class AlarmService {
         final Context context = ContextManager.getContext();
         final AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 
-        boolean changed = service.synchronizeMetadata(taskId, metadata, Metadata.KEY.eq(AlarmFields.METADATA_KEY), new SynchronizeMetadataCallback() {
+        boolean changed = service.synchronizeMetadata(taskUuid, metadata, Metadata.KEY.eq(AlarmFields.METADATA_KEY), new SynchronizeMetadataCallback() {
             @Override
             public void beforeDeleteMetadata(Metadata m) {
                 // Cancel the alarm before the metadata is deleted
@@ -97,7 +97,7 @@ public class AlarmService {
         }, true);
 
         if(changed)
-            scheduleAlarms(taskId);
+            scheduleAlarms(taskUuid);
         return changed;
     }
 
@@ -119,11 +119,11 @@ public class AlarmService {
      * @param properties
      * @return todoroo cursor. PLEASE CLOSE THIS CURSOR!
      */
-    private TodorooCursor<Metadata> getActiveAlarmsForTask(long taskId) {
+    private TodorooCursor<Metadata> getActiveAlarmsForTask(String taskUuid) {
         return PluginServices.getMetadataService().query(Query.select(Metadata.ID, Metadata.TASK_UUID, AlarmFields.TIME).
                 join(Join.inner(Task.TABLE, Metadata.TASK_UUID.eq(Task.UUID))).
                 where(Criterion.and(TaskCriteria.isActive(),
-                        MetadataCriteria.byTaskAndwithKey(taskId, AlarmFields.METADATA_KEY))));
+                        MetadataCriteria.byTaskAndwithKey(taskUuid, AlarmFields.METADATA_KEY))));
     }
 
     /**
@@ -150,8 +150,8 @@ public class AlarmService {
      * Schedules alarms for a single task
      * @param task
      */
-    public void scheduleAlarms(long taskId) {
-        TodorooCursor<Metadata> cursor = getActiveAlarmsForTask(taskId);
+    public void scheduleAlarms(String taskUuid) {
+        TodorooCursor<Metadata> cursor = getActiveAlarmsForTask(taskUuid);
         try {
             Metadata alarm = new Metadata();
             for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {

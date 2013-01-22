@@ -170,7 +170,7 @@ public class MetadataService {
         return dirty;
     }
 
-    public boolean synchronizeMetadata(long taskId, ArrayList<Metadata> metadata,
+    public boolean synchronizeMetadata(String taskId, ArrayList<Metadata> metadata,
             Criterion metadataCriterion, boolean hardDelete) {
         return synchronizeMetadata(taskId, metadata, metadataCriterion, null, hardDelete);
     }
@@ -178,7 +178,7 @@ public class MetadataService {
     /**
      * Does metadata with this key and task exist?
      */
-    public boolean hasMetadata(long id, String key) {
+    public boolean hasMetadata(String id, String key) {
         CountProperty count = new CountProperty();
         TodorooCursor<Metadata> cursor = metadataDao.query(Query.select(
                 count).where(MetadataCriteria.byTaskAndwithKey(id, key)));

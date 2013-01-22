@@ -33,6 +33,11 @@ public class TagDataDao extends RemoteModelDao<TagData> {
         return NameMaps.shouldRecordOutstandingColumnForTable(NameMaps.TABLE_ID_TAGS, columnName);
     }
 
+    @Override
+    public String uuidForLocalId(long localId) {
+        return uuidForLocalIdHelper(localId, TagData.UUID);
+    }
+
     // --- SQL clause generators
 
     /**

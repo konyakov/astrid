@@ -168,7 +168,7 @@ public class MakeChanges<TYPE extends RemoteModel> extends ServerToClientMessage
                 for (int i = 0; i < addTags.length(); i++) {
                     try {
                         String tagUuid = addTags.getString(i);
-                        tagService.createLink(model.getId(), uuid, tagUuid);
+                        tagService.createLink(uuid, tagUuid);
                     } catch (JSONException e) {
                         //
                     }

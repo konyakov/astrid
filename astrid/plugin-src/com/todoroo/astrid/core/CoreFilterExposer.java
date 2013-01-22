@@ -65,7 +65,7 @@ public final class CoreFilterExposer extends BroadcastReceiver implements Astrid
         Filter inbox = new Filter(r.getString(R.string.BFE_Active), r.getString(R.string.BFE_Active),
                 new QueryTemplate().where(
                         Criterion.and(TaskCriteria.activeVisibleMine(),
-                                Criterion.not(Task.ID.in(Query.select(Metadata.TASK).from(Metadata.TABLE).where(
+                                Criterion.not(Task.UUID.in(Query.select(Metadata.TASK_UUID).from(Metadata.TABLE).where(
                                         Criterion.and(MetadataCriteria.withKey(TagMetadata.KEY),
                                                 TagMetadata.TAG_NAME.like("x_%", "x"))))))), //$NON-NLS-1$ //$NON-NLS-2$
                                                 null);

@@ -277,7 +277,7 @@ public class EditNoteActivity extends LinearLayout implements TimerActionListene
         this.removeAllViews();
         TodorooCursor<Metadata> notes = metadataService.query(
                 Query.select(Metadata.PROPERTIES).where(
-                        MetadataCriteria.byTaskAndwithKey(task.getId(),
+                        MetadataCriteria.byTaskAndwithKey(task.getUuid(),
                                 NoteMetadata.METADATA_KEY)));
         try {
             Metadata metadata = new Metadata();

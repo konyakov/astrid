@@ -65,9 +65,9 @@ public final class MilkMetadataService extends SyncMetadataService<MilkTaskConta
     /**
      * Reads task notes out of a task
      */
-    public TodorooCursor<Metadata> getTaskNotesCursor(long taskId) {
+    public TodorooCursor<Metadata> getTaskNotesCursor(String taskUuid) {
         TodorooCursor<Metadata> cursor = metadataDao.query(Query.select(Metadata.PROPERTIES).
-                where(MetadataCriteria.byTaskAndwithKey(taskId, NoteMetadata.METADATA_KEY)));
+                where(MetadataCriteria.byTaskAndwithKey(taskUuid, NoteMetadata.METADATA_KEY)));
         return cursor;
     }
 

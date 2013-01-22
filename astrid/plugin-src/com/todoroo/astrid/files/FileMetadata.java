@@ -64,10 +64,10 @@ public class FileMetadata {
             Metadata.VALUE6.name);
 
 
-    public static Metadata createNewFileMetadata(long taskId, String filePath, String fileName, String fileType) {
+    public static Metadata createNewFileMetadata(String taskUuid, String filePath, String fileName, String fileType) {
         Metadata metadata = new Metadata();
         metadata.setValue(Metadata.KEY, METADATA_KEY);
-        metadata.setValue(Metadata.TASK, taskId);
+        metadata.setValue(Metadata.TASK_UUID, taskUuid);
         metadata.setValue(NAME, fileName);
         metadata.setValue(FILE_PATH, filePath);
         metadata.setValue(FILE_TYPE, fileType);
@@ -76,10 +76,10 @@ public class FileMetadata {
         return metadata;
     }
 
-    public static boolean taskHasAttachments(long taskId) {
+    public static boolean taskHasAttachments(String taskUuid) {
         TodorooCursor<Metadata> files = PluginServices.getMetadataService()
-                .query(Query.select(Metadata.TASK).where(
-                        Criterion.and(MetadataCriteria.byTaskAndwithKey(taskId, METADATA_KEY),
+                .query(Query.select(Metadata.TASK_UUID).where(
+                        Criterion.and(MetadataCriteria.byTaskAndwithKey(taskUuid, METADATA_KEY),
                                 DELETION_DATE.eq(0))).limit(1));
         try {
             return files.getCount() > 0;

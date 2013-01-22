@@ -15,6 +15,7 @@ import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.api.AstridApiConstants;
+import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.data.Metadata;
 
 public class AlarmTaskRepeatListener extends BroadcastReceiver {
@@ -33,7 +34,8 @@ public class AlarmTaskRepeatListener extends BroadcastReceiver {
         if(newDueDate <= 0 || newDueDate <= oldDueDate)
             return;
 
-        TodorooCursor<Metadata> cursor = AlarmService.getInstance().getAlarms(taskId);
+        String uuid = PluginServices.getTaskDao().uuidForLocalId(taskId);
+        TodorooCursor<Metadata> cursor = AlarmService.getInstance().getAlarms(uuid);
         try {
             if(cursor.getCount() == 0)
                 return;
@@ -44,7 +46,7 @@ public class AlarmTaskRepeatListener extends BroadcastReceiver {
                 metadata.readFromCursor(cursor);
                 alarms.add(metadata.getValue(AlarmFields.TIME) + (newDueDate - oldDueDate));
             }
-            AlarmService.getInstance().synchronizeAlarms(taskId, alarms);
+            AlarmService.getInstance().synchronizeAlarms(taskId, uuid, alarms);
 
         } finally {
             cursor.close();

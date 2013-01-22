@@ -142,7 +142,10 @@ public class TaskDao extends RemoteModelDao<Task> {
 
     }
 
-    // --- custom operations
+    @Override
+    public String uuidForLocalId(long localId) {
+        return uuidForLocalIdHelper(localId, Task.UUID);
+    }
 
 
     // --- delete
@@ -161,7 +164,8 @@ public class TaskDao extends RemoteModelDao<Task> {
             return false;
 
         // delete all metadata
-        metadataDao.deleteWhere(MetadataCriteria.byTask(id));
+        Task t = fetch(id, Task.UUID);
+        metadataDao.deleteWhere(MetadataCriteria.byTask(t.getUuid()));
 
         broadcastTaskChanged();
 

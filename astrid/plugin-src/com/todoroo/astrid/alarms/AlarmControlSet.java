@@ -46,7 +46,7 @@ public final class AlarmControlSet extends TaskEditControlSet {
     @Override
     protected void readFromTaskOnInitialize() {
         alertsContainer.removeAllViews();
-        TodorooCursor<Metadata> cursor = AlarmService.getInstance().getAlarms(model.getId());
+        TodorooCursor<Metadata> cursor = AlarmService.getInstance().getAlarms(model.getUuid());
         try {
             for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext())
                 addAlarm(new Date(cursor.get(AlarmFields.TIME)));
@@ -86,7 +86,7 @@ public final class AlarmControlSet extends TaskEditControlSet {
             alarms.add(dateValue);
         }
 
-        if(AlarmService.getInstance().synchronizeAlarms(task.getId(), alarms))
+        if(AlarmService.getInstance().synchronizeAlarms(task.getId(), task.getUuid(), alarms))
             task.setValue(Task.MODIFICATION_DATE, DateUtilities.now());
 
         return null;

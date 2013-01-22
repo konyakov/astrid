@@ -18,7 +18,6 @@ import com.todoroo.astrid.api.Filter;
 import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.Task;
-import com.todoroo.astrid.subtasks.OrderedMetadataListUpdater.OrderedListIterator;
 
 abstract public class OrderedMetadataListUpdater<LIST> {
 
@@ -27,7 +26,7 @@ abstract public class OrderedMetadataListUpdater<LIST> {
     }
 
     public interface OrderedListIterator {
-        public void processTask(long taskId, Metadata metadata);
+        public void processTask(String taskUuid, Metadata metadata);
     }
 
     // --- abstract and empty
@@ -93,51 +92,51 @@ abstract public class OrderedMetadataListUpdater<LIST> {
         final AtomicLong previousTask = new AtomicLong(Task.NO_ID);
         final AtomicLong globalOrder = new AtomicLong(-1);
 
-        iterateThroughList(filter, list, new OrderedListIterator() {
-            @Override
-            public void processTask(long taskId, Metadata metadata) {
-                if(!metadata.isSaved())
-                    metadata = createEmptyMetadata(list, taskId);
-                int indent = metadata.containsNonNullValue(indentProperty()) ?
-                        metadata.getValue(indentProperty()) : 0;
-
-                long order = globalOrder.incrementAndGet();
-                metadata.setValue(orderProperty(), order);
-
-                if(targetTaskId == taskId) {
-                    // if indenting is warranted, indent me and my children
-                    if(indent + delta <= previousIndent.get() + 1 && indent + delta >= 0) {
-                        targetTaskIndent.set(indent);
-                        metadata.setValue(indentProperty(), indent + delta);
-
-                        if(parentProperty() != null) {
-                            long newParent = computeNewParent(filter, list,
-                                    taskId, indent + delta - 1);
-                            if (newParent == taskId)
-                                metadata.setValue(parentProperty(), Task.NO_ID);
-                            else
-                                metadata.setValue(parentProperty(), newParent);
-                        }
-                        saveAndUpdateModifiedDate(metadata);
-                    }
-                } else if(targetTaskIndent.get() > -1) {
-                    // found first task that is not beneath target
-                    if(indent <= targetTaskIndent.get())
-                        targetTaskIndent.set(-1);
-                    else {
-                        metadata.setValue(indentProperty(), indent + delta);
-                        saveAndUpdateModifiedDate(metadata);
-                    }
-                } else {
-                    previousIndent.set(indent);
-                    previousTask.set(taskId);
-                }
-
-                if(!metadata.isSaved())
-                    saveAndUpdateModifiedDate(metadata);
-            }
-
-        });
+//        iterateThroughList(filter, list, new OrderedListIterator() {
+//            @Override
+//            public void processTask(long taskId, Metadata metadata) {
+//                if(!metadata.isSaved())
+//                    metadata = createEmptyMetadata(list, taskId);
+//                int indent = metadata.containsNonNullValue(indentProperty()) ?
+//                        metadata.getValue(indentProperty()) : 0;
+//
+//                long order = globalOrder.incrementAndGet();
+//                metadata.setValue(orderProperty(), order);
+//
+//                if(targetTaskId == taskId) {
+//                    // if indenting is warranted, indent me and my children
+//                    if(indent + delta <= previousIndent.get() + 1 && indent + delta >= 0) {
+//                        targetTaskIndent.set(indent);
+//                        metadata.setValue(indentProperty(), indent + delta);
+//
+//                        if(parentProperty() != null) {
+//                            long newParent = computeNewParent(filter, list,
+//                                    taskId, indent + delta - 1);
+//                            if (newParent == taskId)
+//                                metadata.setValue(parentProperty(), Task.NO_ID);
+//                            else
+//                                metadata.setValue(parentProperty(), newParent);
+//                        }
+//                        saveAndUpdateModifiedDate(metadata);
+//                    }
+//                } else if(targetTaskIndent.get() > -1) {
+//                    // found first task that is not beneath target
+//                    if(indent <= targetTaskIndent.get())
+//                        targetTaskIndent.set(-1);
+//                    else {
+//                        metadata.setValue(indentProperty(), indent + delta);
+//                        saveAndUpdateModifiedDate(metadata);
+//                    }
+//                } else {
+//                    previousIndent.set(indent);
+//                    previousTask.set(taskId);
+//                }
+//
+//                if(!metadata.isSaved())
+//                    saveAndUpdateModifiedDate(metadata);
+//            }
+//
+//        });
         onMovedOrIndented(getTaskMetadata(list, targetTaskId));
     }
 
@@ -155,19 +154,19 @@ abstract public class OrderedMetadataListUpdater<LIST> {
         final AtomicLong lastPotentialParent = new AtomicLong(Task.NO_ID);
         final AtomicBoolean computedParent = new AtomicBoolean(false);
 
-        iterateThroughList(filter, list, new OrderedListIterator() {
-            @Override
-            public void processTask(long taskId, Metadata metadata) {
-                if (targetTask.get() == taskId) {
-                    computedParent.set(true);
-                }
-
-                int indent = metadata.getValue(indentProperty());
-                if (!computedParent.get() && indent == desiredParentIndent.get()) {
-                    lastPotentialParent.set(taskId);
-                }
-            }
-        });
+//        iterateThroughList(filter, list, new OrderedListIterator() {
+//            @Override
+//            public void processTask(long taskId, Metadata metadata) {
+//                if (targetTask.get() == taskId) {
+//                    computedParent.set(true);
+//                }
+//
+//                int indent = metadata.getValue(indentProperty());
+//                if (!computedParent.get() && indent == desiredParentIndent.get()) {
+//                    lastPotentialParent.set(taskId);
+//                }
+//            }
+//        });
 
         if (lastPotentialParent.get() == Task.NO_ID) return Task.NO_ID;
         return lastPotentialParent.get();
@@ -272,36 +271,36 @@ abstract public class OrderedMetadataListUpdater<LIST> {
         final AtomicInteger previoustIndent = new AtomicInteger(-1);
         final AtomicReference<Node> currentNode = new AtomicReference<Node>(root);
 
-        iterateThroughList(filter, list, new OrderedListIterator() {
-            @Override
-            public void processTask(long taskId, Metadata metadata) {
-                int indent = metadata.getValue(indentProperty());
-
-                int previousIndentValue = previoustIndent.get();
-                if(indent == previousIndentValue) { // sibling
-                    Node parent = currentNode.get().parent;
-                    currentNode.set(new Node(taskId, parent));
-                    parent.children.add(currentNode.get());
-                } else if(indent > previousIndentValue) { // child
-                    Node parent = currentNode.get();
-                    currentNode.set(new Node(taskId, parent));
-                    parent.children.add(currentNode.get());
-                } else { // in a different tree
-                    Node node = currentNode.get().parent;
-                    for(int i = indent; i < previousIndentValue; i++) {
-                        node = node.parent;
-                        if(node == null) {
-                            node = root;
-                            break;
-                        }
-                    }
-                    currentNode.set(new Node(taskId, node));
-                    node.children.add(currentNode.get());
-                }
-
-                previoustIndent.set(indent);
-            }
-        });
+//        iterateThroughList(filter, list, new OrderedListIterator() {
+//            @Override
+//            public void processTask(long taskId, Metadata metadata) {
+//                int indent = metadata.getValue(indentProperty());
+//
+//                int previousIndentValue = previoustIndent.get();
+//                if(indent == previousIndentValue) { // sibling
+//                    Node parent = currentNode.get().parent;
+//                    currentNode.set(new Node(taskId, parent));
+//                    parent.children.add(currentNode.get());
+//                } else if(indent > previousIndentValue) { // child
+//                    Node parent = currentNode.get();
+//                    currentNode.set(new Node(taskId, parent));
+//                    parent.children.add(currentNode.get());
+//                } else { // in a different tree
+//                    Node node = currentNode.get().parent;
+//                    for(int i = indent; i < previousIndentValue; i++) {
+//                        node = node.parent;
+//                        if(node == null) {
+//                            node = root;
+//                            break;
+//                        }
+//                    }
+//                    currentNode.set(new Node(taskId, node));
+//                    node.children.add(currentNode.get());
+//                }
+//
+//                previoustIndent.set(indent);
+//            }
+//        });
         return root;
     }
 
@@ -365,14 +364,14 @@ abstract public class OrderedMetadataListUpdater<LIST> {
     // --- utility
 
     public void debugPrint(Filter filter, LIST list) {
-        iterateThroughList(filter, list, new OrderedListIterator() {
-            public void processTask(long taskId, Metadata metadata) {
-                System.err.format("id %d: order %d, indent:%d, parent:%d\n", taskId, //$NON-NLS-1$
-                        metadata.getValue(orderProperty()),
-                        metadata.getValue(indentProperty()),
-                        parentProperty() == null ? Task.NO_ID : metadata.getValue(parentProperty()));
-            }
-        });
+//        iterateThroughList(filter, list, new OrderedListIterator() {
+//            public void processTask(long taskId, Metadata metadata) {
+//                System.err.format("id %d: order %d, indent:%d, parent:%d\n", taskId, //$NON-NLS-1$
+//                        metadata.getValue(orderProperty()),
+//                        metadata.getValue(indentProperty()),
+//                        parentProperty() == null ? Task.NO_ID : metadata.getValue(parentProperty()));
+//            }
+//        });
     }
 
 

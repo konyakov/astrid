@@ -155,7 +155,7 @@ public final class ProducteevDataService {
 
         task.metadata.add(task.pdvTask);
         // note we don't include note metadata, since we only receive deltas
-        metadataService.synchronizeMetadata(task.task.getId(), task.metadata,
+        metadataService.synchronizeMetadata(task.task.getUuid(), task.metadata,
                 Criterion.or(MetadataCriteria.withKey(ProducteevTask.METADATA_KEY),
                         MetadataCriteria.withKey(TagMetadata.KEY)), true);
     }
@@ -171,7 +171,7 @@ public final class ProducteevDataService {
         // read tags, notes, etc
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();
         TodorooCursor<Metadata> metadataCursor = metadataService.query(Query.select(Metadata.PROPERTIES).
-                where(Criterion.and(MetadataCriteria.byTask(task.getId()),
+                where(Criterion.and(MetadataCriteria.byTask(task.getUuid()),
                         Criterion.or(MetadataCriteria.withKey(TagMetadata.KEY),
                                 MetadataCriteria.withKey(ProducteevTask.METADATA_KEY),
                                 MetadataCriteria.withKey(NoteMetadata.METADATA_KEY)))));
@@ -190,7 +190,7 @@ public final class ProducteevDataService {
      * Reads metadata out of a task
      * @return null if no metadata found
      */
-    public Metadata getTaskMetadata(long taskId) {
+    public Metadata getTaskMetadata(String taskId) {
         TodorooCursor<Metadata> cursor = metadataService.query(Query.select(
                 Metadata.PROPERTIES).where(
                 MetadataCriteria.byTaskAndwithKey(taskId, ProducteevTask.METADATA_KEY)));
@@ -207,7 +207,7 @@ public final class ProducteevDataService {
     /**
      * Reads task notes out of a task
      */
-    public TodorooCursor<Metadata> getTaskNotesCursor(long taskId) {
+    public TodorooCursor<Metadata> getTaskNotesCursor(String taskId) {
         TodorooCursor<Metadata> cursor = metadataService.query(Query.select(Metadata.PROPERTIES).
                 where(MetadataCriteria.byTaskAndwithKey(taskId, NoteMetadata.METADATA_KEY)));
         return cursor;

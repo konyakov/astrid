@@ -18,7 +18,9 @@ import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.astrid.api.AstridApiConstants;
+import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.Task;
 
 /**
  * Exposes Task Details for Remember the Milk:
@@ -50,7 +52,8 @@ public class MilkDetailExposer extends BroadcastReceiver {
         if(taskId == -1)
             return;
 
-        String taskDetail = getTaskDetails(context, taskId);
+        Task t = PluginServices.getTaskDao().fetch(taskId, Task.UUID);
+        String taskDetail = getTaskDetails(context, t.getUuid());
         if(taskDetail == null)
             return;
 
@@ -61,8 +64,8 @@ public class MilkDetailExposer extends BroadcastReceiver {
         context.sendBroadcast(broadcastIntent, AstridApiConstants.PERMISSION_READ);
     }
 
-    public String getTaskDetails(Context context, long id) {
-        Metadata metadata = milkMetadataService.getTaskMetadata(id);
+    public String getTaskDetails(Context context, String uuid) {
+        Metadata metadata = milkMetadataService.getTaskMetadata(uuid);
         if(metadata == null)
             return null;
 

@@ -151,7 +151,7 @@ public class PeopleFilterExposer extends BroadcastReceiver {
 
         String title = context.getString(R.string.actfm_my_shared_tasks_title);
         QueryTemplate template = new QueryTemplate().join(Join.inner(Metadata.TABLE.as("mtags"),
-                Criterion.and(Task.ID.eq(Field.field("mtags." + Metadata.TASK.name)),
+                Criterion.and(Task.UUID.eq(Field.field("mtags." + Metadata.TASK_UUID.name)),
                         Field.field("mtags." + Metadata.KEY.name).eq(TagMetadata.KEY),
                         Field.field("mtags." + TagMetadata.TAG_NAME.name).in(names),
                         TaskCriteria.activeVisibleMine())));

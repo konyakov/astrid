@@ -59,7 +59,7 @@ public final class TaskRabbitDataService {
         taskDao.save(task.task);
         task.metadata.add(task.trTask);
         // note we don't include note metadata, since we only receive deltas
-        metadataService.synchronizeMetadata(task.task.getId(), task.metadata,
+        metadataService.synchronizeMetadata(task.task.getUuid(), task.metadata,
                 MetadataCriteria.withKey(TaskRabbitMetadata.METADATA_KEY), true);
     }
 
@@ -72,7 +72,7 @@ public final class TaskRabbitDataService {
         // read tags, notes, etc
         ArrayList<Metadata> metadata = new ArrayList<Metadata>();
         TodorooCursor<Metadata> metadataCursor = metadataService.query(Query.select(Metadata.PROPERTIES).
-                where(Criterion.and(MetadataCriteria.byTask(task.getId()),
+                where(Criterion.and(MetadataCriteria.byTask(task.getUuid()),
                                 MetadataCriteria.withKey(TaskRabbitMetadata.METADATA_KEY))));
         try {
             for(metadataCursor.moveToFirst(); !metadataCursor.isAfterLast(); metadataCursor.moveToNext()) {

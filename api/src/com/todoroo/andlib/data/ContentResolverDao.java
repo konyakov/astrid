@@ -21,6 +21,7 @@ import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.sql.Criterion;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.AndroidUtilities;
+import com.todoroo.astrid.data.RemoteModel;
 
 
 /**
@@ -141,6 +142,36 @@ public class ContentResolverDao<TYPE extends AbstractModel> {
     public TYPE fetch(long id, Property<?>... properties) {
         TodorooCursor<TYPE> cursor = query(
                 Query.select(properties).where(AbstractModel.ID_PROPERTY.eq(id)));
+        try {
+            if (cursor.getCount() == 0)
+                return null;
+            cursor.moveToFirst();
+            Constructor<TYPE> constructor = modelClass.getConstructor(TodorooCursor.class);
+            return constructor.newInstance(cursor);
+        } catch (SecurityException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                cursor.close();
+            } catch (NullPointerException e) {
+                // cursor was not open
+            }
+        }
+    }
+
+    public TYPE fetch(String uuid, Property<?>... properties) {
+        TodorooCursor<TYPE> cursor = query(
+                Query.select(properties).where(RemoteModel.UUID_PROPERTY.eq(uuid)));
         try {
             if (cursor.getCount() == 0)
                 return null;

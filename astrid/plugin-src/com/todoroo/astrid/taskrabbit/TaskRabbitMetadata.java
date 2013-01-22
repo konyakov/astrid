@@ -5,9 +5,9 @@
  */
 package com.todoroo.astrid.taskrabbit;
 
-import com.todoroo.andlib.data.AbstractModel;
 import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.astrid.data.Metadata;
+import com.todoroo.astrid.data.RemoteModel;
 
 /**
  * Metadata entries for a GTasks Task
@@ -36,14 +36,14 @@ public class TaskRabbitMetadata {
      * @param taskId if > 0, will set metadata task field
      * @return
      */
-    public static Metadata createEmptyMetadata(long taskId) {
+    public static Metadata createEmptyMetadata(String taskUuid) {
         Metadata metadata = new Metadata();
         metadata.setValue(Metadata.KEY, TaskRabbitMetadata.METADATA_KEY);
         metadata.setValue(ID, ""); //$NON-NLS-1$
         metadata.setValue(DATA_LOCAL, ""); //$NON-NLS-1$
         metadata.setValue(DATA_REMOTE, ""); //$NON-NLS-1$
-        if(taskId > AbstractModel.NO_ID)
-            metadata.setValue(Metadata.TASK, taskId);
+        if(!RemoteModel.isUuidEmpty(taskUuid))
+            metadata.setValue(Metadata.TASK_UUID, taskUuid);
         return metadata;
     }
 

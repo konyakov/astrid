@@ -167,7 +167,7 @@ public class ReminderDialog extends Dialog {
         addSharedWithFaces(task, pictureUrls, isSharedTask);
 
         if (pictureUrls.size() < MAX_FACES) {
-            addTagFaces(task.getId(), pictureUrls, isSharedTask);
+            addTagFaces(task.getUuid(), pictureUrls, isSharedTask);
         }
 
         if (pictureUrls.size() > 0) {
@@ -236,7 +236,7 @@ public class ReminderDialog extends Dialog {
         }
     }
 
-    private void addTagFaces(long taskId, LinkedHashSet<String> pictureUrls, AtomicBoolean isSharedTask) {
+    private void addTagFaces(String taskId, LinkedHashSet<String> pictureUrls, AtomicBoolean isSharedTask) {
         TodorooCursor<TagData> tags = tagService.getTagDataForTask(taskId, TagData.MEMBER_COUNT.gt(0), TagData.MEMBERS);
         try {
             TagData td = new TagData();

@@ -2,6 +2,7 @@ package com.todoroo.astrid.dao;
 
 import com.todoroo.andlib.data.DatabaseDao;
 import com.todoroo.andlib.data.Property;
+import com.todoroo.andlib.data.Property.StringProperty;
 import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.astrid.data.RemoteModel;
@@ -16,7 +17,7 @@ import com.todoroo.astrid.helper.UUIDHelper;
  *
  * @param <RTYPE>
  */
-public class RemoteModelDao<RTYPE extends RemoteModel> extends DatabaseDao<RTYPE> {
+public abstract class RemoteModelDao<RTYPE extends RemoteModel> extends DatabaseDao<RTYPE> {
 
     public RemoteModelDao(Class<RTYPE> modelClass) {
         super(modelClass);
@@ -35,6 +36,13 @@ public class RemoteModelDao<RTYPE extends RemoteModel> extends DatabaseDao<RTYPE
                 Query.select(properties).where(RemoteModel.UUID_PROPERTY.eq(uuid)));
         cursor.moveToFirst();
         return new TodorooCursor<RTYPE>(cursor, properties);
+    }
+
+    public abstract String uuidForLocalId(long localId);
+
+    protected String uuidForLocalIdHelper(long localId, StringProperty uuidProperty) {
+        RTYPE model = fetch(localId, uuidProperty);
+        return model.getUuid();
     }
 
     public RTYPE fetchByUuid(String uuid, Property<?>... properties) {

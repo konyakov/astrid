@@ -486,7 +486,7 @@ public final class ActFmSyncService {
         }
 
         if(Flags.checkAndClear(Flags.TAGS_CHANGED) || newlyCreated) {
-            TodorooCursor<Metadata> cursor = TagService.getInstance().getTags(task.getId(), false);
+            TodorooCursor<Metadata> cursor = TagService.getInstance().getTags(task.getUuid(), false);
             try {
                 if(cursor.getCount() == 0) {
                     params.add("tags");
@@ -1016,7 +1016,7 @@ public final class ActFmSyncService {
         JsonHelper.taskFromJson(result, task, metadata);
         task.putTransitory(SyncFlags.ACTFM_SUPPRESS_SYNC, true);
         taskService.save(task);
-        metadataService.synchronizeMetadata(task.getId(), metadata, Metadata.KEY.eq(TagMetadata.KEY), false);
+        metadataService.synchronizeMetadata(task.getUuid(), metadata, Metadata.KEY.eq(TagMetadata.KEY), false);
         synchronizeAttachments(result, task);
     }
 
@@ -1526,7 +1526,7 @@ public final class ActFmSyncService {
                 }
 
                 ids.add(remote.getId());
-                metadataService.synchronizeMetadata(remote.getId(), metadata, MetadataCriteria.withKey(TagMetadata.KEY), false);
+                metadataService.synchronizeMetadata(remote.getUuid(), metadata, MetadataCriteria.withKey(TagMetadata.KEY), false);
                 synchronizeAttachments(item, remote);
                 remote.clear();
             }
@@ -1580,7 +1580,7 @@ public final class ActFmSyncService {
 
     private void synchronizeAttachments(JSONObject item, Task model) {
         TodorooCursor<Metadata> attachments = metadataService.query(Query.select(Metadata.PROPERTIES)
-                .where(Criterion.and(MetadataCriteria.byTaskAndwithKey(model.getId(),
+                .where(Criterion.and(MetadataCriteria.byTaskAndwithKey(model.getUuid(),
                         FileMetadata.METADATA_KEY), FileMetadata.REMOTE_ID.gt(0))));
         try {
             HashMap<Long, Metadata> currentFiles = new HashMap<Long, Metadata>();
@@ -1603,7 +1603,7 @@ public final class ActFmSyncService {
                     currentFiles.remove(id);
                 } else {
                     // Create new file attachment
-                    Metadata newAttachment = FileMetadata.createNewFileMetadata(model.getId(), "",
+                    Metadata newAttachment = FileMetadata.createNewFileMetadata(model.getUuid(), "",
                             file.getString("name"), file.getString("content_type"));
                     String url = file.getString("url");
                     newAttachment.setValue(FileMetadata.URL, url);

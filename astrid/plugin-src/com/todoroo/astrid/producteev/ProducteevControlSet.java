@@ -70,7 +70,7 @@ public class ProducteevControlSet extends PopupControlSet {
      * @param newUsers the new userlist to show in the responsibleSelector
      */
     private void refreshResponsibleSpinner(ArrayList<ProducteevUser> newUsers) {
-        Metadata metadata = ProducteevDataService.getInstance().getTaskMetadata(model.getId());
+        Metadata metadata = ProducteevDataService.getInstance().getTaskMetadata(model.getUuid());
         long responsibleId = -1;
         if(metadata != null && metadata.containsNonNullValue(ProducteevTask.RESPONSIBLE_ID))
             responsibleId = metadata.getValue(ProducteevTask.RESPONSIBLE_ID);
@@ -111,7 +111,7 @@ public class ProducteevControlSet extends PopupControlSet {
 
     @Override
     protected void readFromTaskOnInitialize() {
-        Metadata metadata = ProducteevDataService.getInstance().getTaskMetadata(model.getId());
+        Metadata metadata = ProducteevDataService.getInstance().getTaskMetadata(model.getUuid());
         if(metadata == null)
             metadata = ProducteevTask.newMetadata();
 
@@ -243,7 +243,7 @@ public class ProducteevControlSet extends PopupControlSet {
 
     @Override
     protected String writeToModelAfterInitialized(Task task) {
-        Metadata metadata = ProducteevDataService.getInstance().getTaskMetadata(task.getId());
+        Metadata metadata = ProducteevDataService.getInstance().getTaskMetadata(task.getUuid());
         try {
             if (metadata == null) {
                 metadata = new Metadata();

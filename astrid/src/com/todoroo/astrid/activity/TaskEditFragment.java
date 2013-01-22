@@ -876,7 +876,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
         loadItem(intent);
 
         synchronized (controls) {
-            if (!FileMetadata.taskHasAttachments(model.getId())) {
+            if (!FileMetadata.taskHasAttachments(model.getUuid())) {
                 filesControlSet.getDisplayView().setVisibility(View.GONE);
             }
             for (TaskEditControlSet controlSet : controls)
@@ -1180,7 +1180,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
     }
 
     private void createNewFileAttachment(String path, String fileName, String fileType) {
-        Metadata fileMetadata = FileMetadata.createNewFileMetadata(model.getId(), path, fileName, fileType);
+        Metadata fileMetadata = FileMetadata.createNewFileMetadata(model.getUuid(), path, fileName, fileType);
         metadataService.save(fileMetadata);
         actFmSyncService.pushAttachmentInBackground(fileMetadata);
         filesControlSet.refreshMetadata();

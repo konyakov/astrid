@@ -33,7 +33,7 @@ public class TaskRabbitTaskContainer extends SyncContainer {
         this.task = task;
         this.trTask = trTask;
         if(this.trTask == null) {
-            this.trTask = TaskRabbitMetadata.createEmptyMetadata(task.getId());
+            this.trTask = TaskRabbitMetadata.createEmptyMetadata(task.getUuid());
         }
         this.metadata = new ArrayList<Metadata>();
     }

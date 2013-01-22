@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.todoroo.astrid.api.AstridApiConstants;
+import com.todoroo.astrid.core.PluginServices;
 
 /**
  * Exposes Task Detail for tags, i.e. "Tags: frogs, animals"
@@ -39,7 +40,8 @@ public class TagDetailExposer extends BroadcastReceiver {
     }
 
     public String getTaskDetails(long id) {
-        String tagList = TagService.getInstance().getTagsAsString(id, false);
+        String uuid = PluginServices.getTaskDao().uuidForLocalId(id);
+        String tagList = TagService.getInstance().getTagsAsString(uuid, false);
         if(tagList.length() == 0)
             return null;
 

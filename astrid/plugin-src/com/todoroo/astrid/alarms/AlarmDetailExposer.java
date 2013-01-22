@@ -16,6 +16,7 @@ import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.utility.DateUtilities;
 import com.todoroo.astrid.api.AstridApiConstants;
+import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.data.Metadata;
 
 /**
@@ -34,7 +35,8 @@ public class AlarmDetailExposer extends BroadcastReceiver {
         if(taskId == -1)
             return;
 
-        String taskDetail = getTaskDetails(context, taskId);
+        String uuid = PluginServices.getTaskDao().uuidForLocalId(taskId);
+        String taskDetail = getTaskDetails(context, uuid);
         if(taskDetail == null)
             return;
 
@@ -46,7 +48,7 @@ public class AlarmDetailExposer extends BroadcastReceiver {
         context.sendBroadcast(broadcastIntent, AstridApiConstants.PERMISSION_READ);
     }
 
-    public String getTaskDetails(Context context, long id) {
+    public String getTaskDetails(Context context, String id) {
         TodorooCursor<Metadata> cursor = AlarmService.getInstance().getAlarms(id);
         long nextTime = -1;
         try {

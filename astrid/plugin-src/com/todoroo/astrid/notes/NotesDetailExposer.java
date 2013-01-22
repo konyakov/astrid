@@ -73,7 +73,7 @@ public class NotesDetailExposer extends BroadcastReceiver {
 
         TodorooCursor<Metadata> cursor = PluginServices.getMetadataService().query(
                 Query.select(Metadata.PROPERTIES).where(
-                        MetadataCriteria.byTaskAndwithKey(task.getId(),
+                        MetadataCriteria.byTaskAndwithKey(task.getUuid(),
                                 NoteMetadata.METADATA_KEY)).orderBy(Order.asc(Metadata.CREATION_DATE)));
         Metadata metadata = new Metadata();
         try {

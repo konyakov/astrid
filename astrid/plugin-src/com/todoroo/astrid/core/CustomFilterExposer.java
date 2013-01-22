@@ -160,7 +160,7 @@ public final class CustomFilterExposer extends BroadcastReceiver implements Astr
         int themeFlags = ThemeService.getFilterThemeFlags();
         Filter f = new Filter(r.getString(R.string.BFE_Assigned),
                 r.getString(R.string.BFE_Assigned),
-                new QueryTemplate().join(Join.left(Metadata.TABLE, Criterion.and(Metadata.KEY.eq(TaskRabbitMetadata.METADATA_KEY), Task.ID.eq(Metadata.TASK))))
+                new QueryTemplate().join(Join.left(Metadata.TABLE, Criterion.and(Metadata.KEY.eq(TaskRabbitMetadata.METADATA_KEY), Task.UUID.eq(Metadata.TASK_UUID))))
                     .where(Criterion.and(TaskCriteria.isActive(),
                         Criterion.or(Task.CREATOR_ID.eq(0), Task.CREATOR_ID.eq(ActFmPreferenceService.userId())),
                         Criterion.or(Task.USER_ID.neq(0),

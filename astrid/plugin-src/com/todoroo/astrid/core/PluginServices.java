@@ -141,9 +141,9 @@ public final class PluginServices {
     /**
      * Find the corresponding metadata for this task
      */
-    public static Metadata getMetadataByTaskAndWithKey(long taskId, String metadataKey) {
+    public static Metadata getMetadataByTaskAndWithKey(String taskUuid, String metadataKey) {
         TodorooCursor<Metadata> cursor = PluginServices.getMetadataService().query(Query.select(
-                Metadata.PROPERTIES).where(MetadataCriteria.byTaskAndwithKey(taskId, metadataKey)));
+                Metadata.PROPERTIES).where(MetadataCriteria.byTaskAndwithKey(taskUuid, metadataKey)));
                 try {
             if(cursor.getCount() > 0) {
                 cursor.moveToNext();

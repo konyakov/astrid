@@ -10,9 +10,6 @@ import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import android.text.TextUtils;
-import android.util.Log;
-
 import com.todoroo.andlib.data.Property.IntegerProperty;
 import com.todoroo.andlib.data.Property.LongProperty;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -29,7 +26,6 @@ import com.todoroo.astrid.data.StoreObject;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.gtasks.sync.GtasksSyncService;
 import com.todoroo.astrid.subtasks.OrderedMetadataListUpdater;
-import com.todoroo.astrid.subtasks.OrderedMetadataListUpdater.OrderedListIterator;
 
 public class GtasksTaskListUpdater extends OrderedMetadataListUpdater<StoreObject> {
 
@@ -70,7 +66,8 @@ public class GtasksTaskListUpdater extends OrderedMetadataListUpdater<StoreObjec
 
     @Override
     protected Metadata getTaskMetadata(StoreObject list, long taskId) {
-        return gtasksMetadataService.getTaskMetadata(taskId);
+        String uuid = PluginServices.getTaskDao().uuidForLocalId(taskId);
+        return gtasksMetadataService.getTaskMetadata(uuid);
     }
     @Override
     protected Metadata createEmptyMetadata(StoreObject list, long taskId) {
@@ -119,24 +116,24 @@ public class GtasksTaskListUpdater extends OrderedMetadataListUpdater<StoreObjec
         final AtomicLong order = new AtomicLong(0);
         final AtomicInteger previousIndent = new AtomicInteger(-1);
 
-        gtasksMetadataService.iterateThroughList(list, new OrderedListIterator() {
-            @Override
-            public void processTask(long taskId, Metadata metadata) {
-                metadata.setValue(GtasksMetadata.ORDER, order.getAndAdd(1));
-                int indent = metadata.getValue(GtasksMetadata.INDENT);
-                if(indent > previousIndent.get() + 1)
-                    indent = previousIndent.get() + 1;
-                metadata.setValue(GtasksMetadata.INDENT, indent);
-
-                Long parent = parents.get(taskId);
-                if(parent == null || parent < 0)
-                    parent = Task.NO_ID;
-                metadata.setValue(GtasksMetadata.PARENT_TASK, parent);
-
-                PluginServices.getMetadataService().save(metadata);
-                previousIndent.set(indent);
-            }
-        });
+//        gtasksMetadataService.iterateThroughList(list, new OrderedListIterator() {
+//            @Override
+//            public void processTask(long taskId, Metadata metadata) {
+//                metadata.setValue(GtasksMetadata.ORDER, order.getAndAdd(1));
+//                int indent = metadata.getValue(GtasksMetadata.INDENT);
+//                if(indent > previousIndent.get() + 1)
+//                    indent = previousIndent.get() + 1;
+//                metadata.setValue(GtasksMetadata.INDENT, indent);
+//
+//                Long parent = parents.get(taskId);
+//                if(parent == null || parent < 0)
+//                    parent = Task.NO_ID;
+//                metadata.setValue(GtasksMetadata.PARENT_TASK, parent);
+//
+//                PluginServices.getMetadataService().save(metadata);
+//                previousIndent.set(indent);
+//            }
+//        });
     }
 
     public void correctOrderAndIndentForList(String listId) {
@@ -175,41 +172,41 @@ public class GtasksTaskListUpdater extends OrderedMetadataListUpdater<StoreObjec
         final AtomicLong previousTask = new AtomicLong(Task.NO_ID);
         final AtomicInteger previousIndent = new AtomicInteger(-1);
 
-        gtasksMetadataService.iterateThroughList(list, new OrderedListIterator() {
-            @Override
-            public void processTask(long taskId, Metadata metadata) {
-                int indent = metadata.getValue(GtasksMetadata.INDENT);
-
-                try {
-                    long parent, sibling;
-                    if(indent > previousIndent.get()) {
-                        parent = previousTask.get();
-                        sibling = Task.NO_ID;
-                    } else if(indent == previousIndent.get()) {
-                        sibling = previousTask.get();
-                        parent = parents.get(sibling);
-                    } else {
-                        // move up once for each indent
-                        sibling = previousTask.get();
-                        for(int i = indent; i < previousIndent.get(); i++)
-                            sibling = parents.get(sibling);
-                        if(parents.containsKey(sibling))
-                            parent = parents.get(sibling);
-                        else
-                            parent = Task.NO_ID;
-                    }
-                    parents.put(taskId, parent);
-                    siblings.put(taskId, sibling);
-                } catch (Exception e) {
-                    Log.e("gtasks-task-updating", "Caught exception", e); //$NON-NLS-1$ //$NON-NLS-2$
-                }
-
-                previousTask.set(taskId);
-                previousIndent.set(indent);
-                if(!TextUtils.isEmpty(metadata.getValue(GtasksMetadata.ID)))
-                    localToRemoteIdMap.put(taskId, metadata.getValue(GtasksMetadata.ID));
-            }
-        });
+//        gtasksMetadataService.iterateThroughList(list, new OrderedListIterator() {
+//            @Override
+//            public void processTask(long taskId, Metadata metadata) {
+//                int indent = metadata.getValue(GtasksMetadata.INDENT);
+//
+//                try {
+//                    long parent, sibling;
+//                    if(indent > previousIndent.get()) {
+//                        parent = previousTask.get();
+//                        sibling = Task.NO_ID;
+//                    } else if(indent == previousIndent.get()) {
+//                        sibling = previousTask.get();
+//                        parent = parents.get(sibling);
+//                    } else {
+//                        // move up once for each indent
+//                        sibling = previousTask.get();
+//                        for(int i = indent; i < previousIndent.get(); i++)
+//                            sibling = parents.get(sibling);
+//                        if(parents.containsKey(sibling))
+//                            parent = parents.get(sibling);
+//                        else
+//                            parent = Task.NO_ID;
+//                    }
+//                    parents.put(taskId, parent);
+//                    siblings.put(taskId, sibling);
+//                } catch (Exception e) {
+//                    Log.e("gtasks-task-updating", "Caught exception", e); //$NON-NLS-1$ //$NON-NLS-2$
+//                }
+//
+//                previousTask.set(taskId);
+//                previousIndent.set(indent);
+//                if(!TextUtils.isEmpty(metadata.getValue(GtasksMetadata.ID)))
+//                    localToRemoteIdMap.put(taskId, metadata.getValue(GtasksMetadata.ID));
+//            }
+//        });
     }
 
 }

@@ -26,5 +26,10 @@ public class UpdateDao extends RemoteModelDao<Update> {
         setDatabase(database);
     }
 
+    @Override
+    public String uuidForLocalId(long localId) {
+        return uuidForLocalIdHelper(localId, Update.UUID);
+    }
+
 }
 

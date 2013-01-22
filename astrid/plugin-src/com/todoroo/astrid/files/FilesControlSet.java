@@ -97,7 +97,7 @@ public class FilesControlSet extends PopupControlSet {
         if (model != null) {
             TodorooCursor<Metadata> cursor = metadataService.query(
                     Query.select(Metadata.PROPERTIES)
-                    .where(Criterion.and(MetadataCriteria.byTaskAndwithKey(model.getId(), FileMetadata.METADATA_KEY),
+                    .where(Criterion.and(MetadataCriteria.byTaskAndwithKey(model.getUuid(), FileMetadata.METADATA_KEY),
                             FileMetadata.DELETION_DATE.eq(0))));
             try {
                 files.clear();

@@ -14,6 +14,7 @@ import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.api.AstridApiConstants;
+import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.service.AstridDependencyInjector;
 
@@ -52,7 +53,8 @@ public class GtasksDetailExposer extends BroadcastReceiver {
         if(taskId == -1)
             return;
 
-        String taskDetail = getTaskDetails(taskId);
+        String uuid = PluginServices.getTaskDao().uuidForLocalId(taskId);
+        String taskDetail = getTaskDetails(uuid);
         if(taskDetail == null)
             return;
 
@@ -63,8 +65,8 @@ public class GtasksDetailExposer extends BroadcastReceiver {
         context.sendBroadcast(broadcastIntent, AstridApiConstants.PERMISSION_READ);
     }
 
-    public String getTaskDetails(long id) {
-        Metadata metadata = gtasksMetadataService.getTaskMetadata(id);
+    public String getTaskDetails(String uuid) {
+        Metadata metadata = gtasksMetadataService.getTaskMetadata(uuid);
         if(metadata == null)
             return null;
 

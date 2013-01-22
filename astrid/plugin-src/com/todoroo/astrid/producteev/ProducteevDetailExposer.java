@@ -17,6 +17,7 @@ import com.todoroo.andlib.service.ContextManager;
 import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.adapter.TaskAdapter;
 import com.todoroo.astrid.api.AstridApiConstants;
+import com.todoroo.astrid.core.PluginServices;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.StoreObject;
 import com.todoroo.astrid.producteev.sync.ProducteevDashboard;
@@ -41,7 +42,8 @@ public class ProducteevDetailExposer extends BroadcastReceiver {
 
         String taskDetail;
         try {
-            taskDetail = getTaskDetails(context, taskId);
+            String uuid = PluginServices.getTaskDao().uuidForLocalId(taskId);
+            taskDetail = getTaskDetails(context, uuid);
         } catch (Exception e) {
             return;
         }
@@ -56,7 +58,7 @@ public class ProducteevDetailExposer extends BroadcastReceiver {
     }
 
     @SuppressWarnings("nls")
-    public String getTaskDetails(Context context, long id) {
+    public String getTaskDetails(Context context, String id) {
         Metadata metadata = ProducteevDataService.getInstance().getTaskMetadata(id);
         if(metadata == null)
             return null;

@@ -195,7 +195,7 @@ public final class GtasksSyncService {
         if (sleep)
             AndroidUtilities.sleepDeep(1000L); //Wait for metadata to be saved
 
-        Metadata gtasksMetadata = gtasksMetadataService.getTaskMetadata(task.getId());
+        Metadata gtasksMetadata = gtasksMetadataService.getTaskMetadata(task.getUuid());
         com.google.api.services.tasks.model.Task remoteModel = null;
         boolean newlyCreated = false;
 

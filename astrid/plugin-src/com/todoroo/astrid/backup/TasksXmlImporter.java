@@ -324,7 +324,7 @@ public class TasksXmlImporter {
             metadata.clear();
             deserializeModel(metadata, Metadata.PROPERTIES);
             metadata.setId(Metadata.NO_ID);
-            metadata.setValue(Metadata.TASK, currentTask.getId());
+            metadata.setValue(Metadata.TASK_UUID, currentTask.getUuid());
             metadataService.save(metadata);
         }
 
@@ -448,7 +448,7 @@ public class TasksXmlImporter {
                 String listId = strtok.nextToken();
 
                 Metadata metadata = new Metadata();
-                metadata.setValue(Metadata.TASK, currentTask.getId());
+                metadata.setValue(Metadata.TASK_UUID, currentTask.getUuid());
                 metadata.setValue(Metadata.VALUE1, (listId));
                 metadata.setValue(Metadata.VALUE2, (taskSeriesId));
                 metadata.setValue(Metadata.VALUE3, (taskId));

@@ -203,14 +203,14 @@ public class TasksXmlExporter {
 
     private synchronized void serializeMetadata(Task task) throws IOException {
         TodorooCursor<Metadata> cursor = metadataService.query(Query.select(
-                Metadata.PROPERTIES).where(MetadataCriteria.byTask(task.getId())));
+                Metadata.PROPERTIES).where(MetadataCriteria.byTask(task.getUuid())));
         try {
             Metadata metadata = new Metadata();
             for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                 metadata.readFromCursor(cursor);
 
                 xml.startTag(null, BackupConstants.METADATA_TAG);
-                serializeModel(metadata, Metadata.PROPERTIES, Metadata.ID, Metadata.TASK);
+                serializeModel(metadata, Metadata.PROPERTIES, Metadata.ID, Metadata.TASK_UUID);
                 xml.endTag(null, BackupConstants.METADATA_TAG);
             }
         } finally {

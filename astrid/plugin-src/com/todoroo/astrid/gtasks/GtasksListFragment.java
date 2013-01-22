@@ -132,7 +132,7 @@ public class GtasksListFragment extends SubtasksListFragment {
     private void clearCompletedTasks() {
         final ProgressDialog pd = new ProgressDialog(getActivity());
         final TodorooCursor<Task> tasks = taskService.fetchFiltered(filter.getSqlQuery(),
-                null, Task.ID, Task.COMPLETION_DATE);
+                null, Task.ID, Task.UUID, Task.COMPLETION_DATE);
         pd.setMessage(this.getString(R.string.gtasks_GTA_clearing));
         pd.show();
 
@@ -146,7 +146,7 @@ public class GtasksListFragment extends SubtasksListFragment {
                         if (t.isCompleted()) {
                             if (listId == null) {
                                 listId = gtasksMetadataService.getTaskMetadata(
-                                        t.getId()).getValue(GtasksMetadata.LIST_ID);
+                                        t.getUuid()).getValue(GtasksMetadata.LIST_ID);
                             }
                             t.setValue(Task.DELETION_DATE, DateUtilities.now());
                             taskService.save(t);
