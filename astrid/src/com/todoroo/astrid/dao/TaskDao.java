@@ -75,14 +75,30 @@ public class TaskDao extends DatabaseDao<Task> {
 
     	/** @return tasks that have not yet been completed or deleted */
     	public static Criterion activeAndVisible() {
-    	    return Criterion.and(Task.COMPLETION_DATE.eq(0),
+    	    return activeAndVisible(0);
+    	}
+
+    	public static Criterion activeAndVisible(long completionInterval) {
+    	    Criterion completionCriterion = Task.COMPLETION_DATE.eq(0);
+    	    if (completionInterval > 0)
+    	        completionCriterion = Criterion.or(completionCriterion, Task.COMPLETION_DATE.gt(Functions.beforeNow(completionInterval)));
+
+    	    return Criterion.and(completionCriterion,
     	            Task.DELETION_DATE.eq(0),
     	            Task.HIDE_UNTIL.lt(Functions.now()));
     	}
 
     	/** @return tasks that have not yet been completed or deleted and are assigned to me */
     	public static Criterion activeVisibleMine() {
-    	    return Criterion.and(Task.COMPLETION_DATE.eq(0),
+    	    return activeVisibleMine(0);
+    	}
+
+    	public static Criterion activeVisibleMine(long completionInterval) {
+    	    Criterion completionCriterion = Task.COMPLETION_DATE.eq(0);
+            if (completionInterval > 0)
+                completionCriterion = Criterion.or(completionCriterion, Task.COMPLETION_DATE.gt(Functions.beforeNow(completionInterval)));
+
+    	    return Criterion.and(completionCriterion,
     	            Task.DELETION_DATE.eq(0),
     	            Task.HIDE_UNTIL.lt(Functions.now()),
     	            Field.field(Task.FLAGS.name + " & " + //$NON-NLS-1$
@@ -92,7 +108,15 @@ public class TaskDao extends DatabaseDao<Task> {
 
     	/** @return tasks that have not yet been completed or deleted */
     	public static Criterion isActive() {
-    	    return Criterion.and(Task.COMPLETION_DATE.eq(0),
+    	    return isActive(0);
+    	}
+
+    	public static Criterion isActive(long completionInterval) {
+    	    Criterion completionCriterion = Task.COMPLETION_DATE.eq(0);
+            if (completionInterval > 0)
+                completionCriterion = Criterion.or(completionCriterion, Task.COMPLETION_DATE.gt(Functions.beforeNow(completionInterval)));
+
+    	    return Criterion.and(completionCriterion,
     	            Task.DELETION_DATE.eq(0));
     	}
 

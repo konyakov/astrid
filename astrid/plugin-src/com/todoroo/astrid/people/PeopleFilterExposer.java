@@ -29,6 +29,7 @@ import com.todoroo.andlib.sql.Join;
 import com.todoroo.andlib.sql.Order;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.sql.QueryTemplate;
+import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.actfm.sync.ActFmPreferenceService;
 import com.todoroo.astrid.actfm.sync.ActFmSyncService;
 import com.todoroo.astrid.api.AstridApiConstants;
@@ -148,13 +149,13 @@ public class PeopleFilterExposer extends BroadcastReceiver {
 
         boolean isTablet = AstridPreferences.useTabletLayout(context);
         int themeFlags = isTablet ? ThemeService.FLAG_FORCE_LIGHT : 0;
-
+        long completionInterval = Preferences.getIntegerFromString(R.string.p_show_completed_tasks, 0);
         String title = context.getString(R.string.actfm_my_shared_tasks_title);
         QueryTemplate template = new QueryTemplate().join(Join.inner(Metadata.TABLE.as("mtags"),
                 Criterion.and(Task.ID.eq(Field.field("mtags." + Metadata.TASK.name)),
                         Field.field("mtags." + Metadata.KEY.name).eq(TagService.KEY),
                         Field.field("mtags." + TagService.TAG.name).in(names),
-                        TaskCriteria.activeVisibleMine())));
+                        TaskCriteria.activeVisibleMine(completionInterval))));
 
         FilterWithCustomIntent filter = new FilterWithCustomIntent(title, title, template, null);
 

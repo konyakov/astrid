@@ -341,9 +341,10 @@ public class TagViewFragment extends TaskListFragment {
             if (members.length() > 0) {
                 membersView.setOnClickListener(null);
                 membersView.removeAllViews();
+                long completionInterval = Preferences.getIntegerFromString(R.string.p_show_completed_tasks, 0);
                 for (int i = 0; i < members.length(); i++) {
                     JSONObject member = members.getJSONObject(i);
-                    addImageForMember(membersView, member);
+                    addImageForMember(membersView, member, completionInterval);
                 }
                 // Handle creator
                 JSONObject owner;
@@ -352,12 +353,12 @@ public class TagViewFragment extends TaskListFragment {
                 } else {
                     owner = ActFmPreferenceService.thisUser();
                 }
-                addImageForMember(membersView, owner);
+                addImageForMember(membersView, owner, completionInterval);
 
                 JSONObject unassigned = new JSONObject();
                 unassigned.put("id", Task.USER_ID_UNASSIGNED); //$NON-NLS-1$
                 unassigned.put("name", getActivity().getString(R.string.actfm_EPA_unassigned)); //$NON-NLS-1$
-                addImageForMember(membersView, unassigned);
+                addImageForMember(membersView, unassigned, completionInterval);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -374,7 +375,7 @@ public class TagViewFragment extends TaskListFragment {
     }
 
     @SuppressWarnings("nls")
-    private void addImageForMember(LinearLayout membersView, JSONObject member) {
+    private void addImageForMember(LinearLayout membersView, JSONObject member, long completionInterval) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         AsyncImageView image = new AsyncImageView(getActivity());
@@ -396,7 +397,7 @@ public class TagViewFragment extends TaskListFragment {
             if (memberToUse.has("picture")) {
                 image.setUrl(memberToUse.getString("picture"));
             }
-            image.setOnClickListener(listenerForImage(memberToUse, id, memberName));
+            image.setOnClickListener(listenerForImage(memberToUse, id, memberName, completionInterval));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -405,7 +406,7 @@ public class TagViewFragment extends TaskListFragment {
         membersView.addView(image);
     }
 
-    private OnClickListener listenerForImage(final JSONObject member, final long id, final String displayName) {
+    private OnClickListener listenerForImage(final JSONObject member, final long id, final String displayName, final long completionInterval) {
         return new OnClickListener() {
             final String email = member.optString("email"); //$NON-NLS-1$
             @Override
@@ -423,7 +424,7 @@ public class TagViewFragment extends TaskListFragment {
                         assignedCriterion = Task.USER.like("%" + email + "%"); //$NON-NLS-1$ //$NON-NLS-2$
                     else
                         assignedCriterion = Task.USER_ID.eq(id);
-                    Criterion assigned = Criterion.and(TaskCriteria.activeAndVisible(), assignedCriterion);
+                    Criterion assigned = Criterion.and(TaskCriteria.activeAndVisible(completionInterval), assignedCriterion);
                     filter = TagFilterExposer.filterFromTag(getActivity(), new Tag(tagData), assigned);
                     TextView filterByAssigned = (TextView) getView().findViewById(R.id.filter_assigned);
                     if (filterByAssigned != null) {

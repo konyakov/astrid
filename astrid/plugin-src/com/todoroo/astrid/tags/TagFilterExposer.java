@@ -105,8 +105,9 @@ public class TagFilterExposer extends BroadcastReceiver implements AstridFilterE
 
     /** Create a filter from tag data object */
     public static FilterWithCustomIntent filterFromTagData(Context context, TagData tagData) {
+        long completionInterval = Preferences.getIntegerFromString(R.string.p_show_completed_tasks, 0);
         Tag tag = new Tag(tagData);
-        return filterFromTag(context, tag, TaskCriteria.activeAndVisible());
+        return filterFromTag(context, tag, TaskCriteria.activeAndVisible(completionInterval));
     }
 
     private static Intent newTagIntent(Context context, Class<? extends Activity> activity, Tag tag, String sql) {
@@ -160,6 +161,7 @@ public class TagFilterExposer extends BroadcastReceiver implements AstridFilterE
         Resources r = context.getResources();
 
         int themeFlags = ThemeService.getFilterThemeFlags();
+        long completionInterval = Preferences.getIntegerFromString(R.string.p_show_completed_tasks, 0);
 
         // --- untagged
         if (shouldAddUntagged) {
@@ -176,14 +178,14 @@ public class TagFilterExposer extends BroadcastReceiver implements AstridFilterE
 
         for(int i = 0; i < tags.length; i++) {
             int index = shouldAddUntagged ? i + 1 : i;
-            filters[index] = constructFilter(context, tags[i]);
+            filters[index] = constructFilter(context, tags[i], completionInterval);
         }
         FilterCategory filter = new FilterCategory(context.getString(name), filters);
         return filter;
     }
 
-    protected Filter constructFilter(Context context, Tag tag) {
-        return filterFromTag(context, tag, TaskCriteria.activeAndVisible());
+    protected Filter constructFilter(Context context, Tag tag, long completionInterval) {
+        return filterFromTag(context, tag, TaskCriteria.activeAndVisible(completionInterval));
     }
 
     // --- tag manipulation activities

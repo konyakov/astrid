@@ -38,10 +38,11 @@ import com.todoroo.astrid.api.Filter;
 import com.todoroo.astrid.api.FilterListItem;
 import com.todoroo.astrid.api.PermaSql;
 import com.todoroo.astrid.dao.StoreObjectDao;
+import com.todoroo.astrid.dao.TaskDao.TaskCriteria;
 import com.todoroo.astrid.data.Metadata;
 import com.todoroo.astrid.data.StoreObject;
 import com.todoroo.astrid.data.Task;
-import com.todoroo.astrid.data.TaskApiDao.TaskCriteria;
+import com.todoroo.astrid.data.TaskApiDao;
 import com.todoroo.astrid.gtasks.GtasksPreferenceService;
 import com.todoroo.astrid.service.TagDataService;
 import com.todoroo.astrid.service.ThemeService;
@@ -80,6 +81,7 @@ public final class CustomFilterExposer extends BroadcastReceiver implements Astr
     }
 
     public static Filter getTodayFilter(Resources r) {
+        long completionInterval = Preferences.getIntegerFromString(R.string.p_show_completed_tasks, 0);
         int themeFlags = ThemeService.getFilterThemeFlags();
         String todayTitle = AndroidUtilities.capitalize(r.getString(R.string.today));
         ContentValues todayValues = new ContentValues();
@@ -87,7 +89,7 @@ public final class CustomFilterExposer extends BroadcastReceiver implements Astr
         Filter todayFilter = new Filter(todayTitle,
                 todayTitle,
                 new QueryTemplate().where(
-                        Criterion.and(TaskCriteria.activeVisibleMine(),
+                        Criterion.and(TaskCriteria.activeVisibleMine(completionInterval),
                                 Task.DUE_DATE.gt(0),
                                 Task.DUE_DATE.lte(PermaSql.VALUE_EOD))),
                                 todayValues);
@@ -120,7 +122,7 @@ public final class CustomFilterExposer extends BroadcastReceiver implements Astr
                 Filter recent = new Filter(r.getString(R.string.BFE_Recent),
                         r.getString(R.string.BFE_Recent),
                         new QueryTemplate().where(
-                                TaskCriteria.ownedByMe()).orderBy(
+                                TaskApiDao.TaskCriteria.ownedByMe()).orderBy(
                                         Order.desc(Task.MODIFICATION_DATE)).limit(15),
                                         null);
                 recent.listingIcon = ((BitmapDrawable)r.getDrawable(

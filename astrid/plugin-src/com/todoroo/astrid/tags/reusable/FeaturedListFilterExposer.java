@@ -92,7 +92,7 @@ public class FeaturedListFilterExposer extends TagFilterExposer {
     }
 
     @Override
-    protected Filter constructFilter(Context context, Tag tag) {
+    protected Filter constructFilter(Context context, Tag tag, long completionInterval) {
         return filterFromFeaturedList(tag, TaskCriteria.activeAndVisible());
     }
 

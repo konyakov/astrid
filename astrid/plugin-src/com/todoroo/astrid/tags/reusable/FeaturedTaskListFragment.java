@@ -18,6 +18,7 @@ import com.todoroo.andlib.data.TodorooCursor;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.sql.Query;
 import com.todoroo.andlib.utility.DialogUtilities;
+import com.todoroo.andlib.utility.Preferences;
 import com.todoroo.astrid.actfm.TagViewFragment;
 import com.todoroo.astrid.activity.TaskListActivity;
 import com.todoroo.astrid.adapter.TaskAdapter;
@@ -166,7 +167,8 @@ public class FeaturedTaskListFragment extends TagViewFragment {
 
                                 Filter clonedFilter;
                                 Tag tag = new Tag(localName, tasks.getCount(), finalRemoteId);
-                                clonedFilter = TagFilterExposer.filterFromTag(activity, tag, TaskCriteria.activeAndVisible());
+                                long completionInterval = Preferences.getIntegerFromString(R.string.p_show_completed_tasks, 0);
+                                clonedFilter = TagFilterExposer.filterFromTag(activity, tag, TaskCriteria.activeAndVisible(completionInterval));
 
                                 tla.onFilterItemClicked(clonedFilter);
                             }

@@ -98,6 +98,16 @@
   <string name="p_show_menu_sort">p_show_menu_sort</string>
   <string name="p_show_menu_addons">p_show_menu_addons</string>
   
+  <!-- show completed tasks key -->
+  <string name="p_show_completed_tasks">p_show_completed_tasks</string>
+  <string-array name="EPr_show_completed_tasks_values">
+      <item>0</item> <!-- never show completed tasks -->
+      <item>300000</item> <!-- 5 minutes (in millis) -->
+      <item>3600000</item> <!-- 1 hour (in millis) -->
+      <item>86400000</item> <!-- 1 day (in millis) -->
+      <item>604800000</item> <!-- 1 week (in millis) -->
+  </string-array>
+  
   <string-array name="TEA_reminder_random_hours">
     <!-- values (in hours) associated with items above. -->
     <item>1</item>

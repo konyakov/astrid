@@ -40,6 +40,10 @@ public final class Functions {
         return new Field("(strftime('%s','now')*1000 + " + millis + ")");
     }
 
+    public static Field beforeNow(long millis) {
+        return new Field("(strftime('%s','now')*1000 - " + millis + ")");
+    }
+
     public static Field strftime(LongProperty field, String format) {
         return new Field("(strftime('" + format + "', datetime(" + field.toString() + "/1000, 'unixepoch', 'localtime')))");
     }

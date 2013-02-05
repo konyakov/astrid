@@ -855,6 +855,16 @@
     <item>Old Style</item>
   </string-array>
   
+  <!-- Show completed tasks preference -->
+  <string name="EPr_show_completed_tasks">Show completed tasks for...</string>
+  <string-array name="EPr_show_completed_tasks_entries">
+      <item>Never</item>
+      <item>5 minutes</item>
+      <item>1 hour</item>
+      <item>1 day</item>
+      <item>1 week</item>
+  </string-array>
+  
   <!-- ========================================== Task Management Settings == -->
 
   <!-- slide 33a/47c: Preference Screen Header: Old Task Management -->

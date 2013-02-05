@@ -151,6 +151,12 @@
 	                android:defaultValue="true"/>
 	        </PreferenceScreen>
 	        
+	        <com.todoroo.astrid.ui.MultilineListPreference
+	            android:key="@string/p_show_completed_tasks"
+	            android:title="@string/EPr_show_completed_tasks"
+	            android:entries="@array/EPr_show_completed_tasks_entries"
+	            android:entryValues="@array/EPr_show_completed_tasks_values" />
+	        
 	        <com.todoroo.astrid.ui.MultilineCheckboxPreference
 	            android:key="@string/p_show_quickadd_controls"
 	            android:title="@string/EPr_show_quickadd_controls"

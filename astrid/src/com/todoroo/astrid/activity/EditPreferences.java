@@ -641,6 +641,13 @@ public class EditPreferences extends TodorooPreferenceActivity {
                 preference.setSummary(R.string.EPr_voiceInputCreatesTask_desc_disabled);
             else
                 preference.setSummary(R.string.EPr_voiceInputCreatesTask_desc_enabled);
+        } else if (r.getString(R.string.p_show_completed_tasks).equals(preference.getKey())) {
+            String[] values = r.getStringArray(R.array.EPr_show_completed_tasks_values);
+            int index = AndroidUtilities.indexOf(values, (String) value);
+            if (index < 0)
+                index = 0;
+            String[] desc = r.getStringArray(R.array.EPr_show_completed_tasks_entries);
+            preference.setSummary(desc[index]);
         }
     }
 
