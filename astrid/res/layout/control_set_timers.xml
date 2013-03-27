@@ -20,12 +20,12 @@
         android:layout_marginRight="10dip"
         android:gravity="center_vertical"
         android:orientation="horizontal">
-	    <TextView
+	    <com.todoroo.astrid.ui.CustomFontTextView
 	      android:layout_width="wrap_content"
 	      android:layout_height="wrap_content"
 	      android:text="@string/TEA_estimatedDuration_label"
 	      style="@style/TextAppearance.GEN_EditLabel.DLG_EditLabel" />
-	    <TextView
+	    <com.todoroo.astrid.ui.CustomFontTextView
              android:id="@+id/estimatedDuration"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
@@ -47,12 +47,12 @@
         android:layout_marginRight="10dip"
         android:gravity="center_vertical"
         android:orientation="horizontal">
-	    <TextView
+	    <com.todoroo.astrid.ui.CustomFontTextView
 	      android:layout_width="wrap_content"
 	      android:layout_height="wrap_content"
 	      android:text="@string/TEA_elapsedDuration_label"
 	      style="@style/TextAppearance.GEN_EditLabel.DLG_EditLabel" />
-	    <TextView
+	    <com.todoroo.astrid.ui.CustomFontTextView
              android:id="@+id/elapsedDuration"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"

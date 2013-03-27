@@ -24,7 +24,7 @@
         android:scaleType="fitCenter"/>
             
     <!-- filter name -->
-    <TextView android:id="@+id/name"
+    <com.todoroo.astrid.ui.CustomFontTextView android:id="@+id/name"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_marginLeft="12dp"

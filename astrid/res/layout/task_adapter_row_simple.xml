@@ -70,7 +70,7 @@
                android:layout_weight="100"
 	           android:orientation="vertical"
 	           android:gravity="center_vertical">
-		        <TextView
+		        <com.todoroo.astrid.ui.CustomFontTextView
 		            android:id="@+id/title"
 		            style="@style/TextAppearance.TAd_ItemTitle"
 		            android:layout_width="fill_parent"

@@ -23,7 +23,7 @@
 		  android:layout_height="fill_parent">
 		  
 		  <!-- reminders -->
-		      <TextView
+		      <com.todoroo.astrid.ui.CustomFontTextView
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
 		        android:paddingLeft="10dip"
@@ -73,12 +73,12 @@
 		          android:layout_marginRight="10dip"
 		          android:gravity="center_vertical"
 		          android:orientation="horizontal">
-			      <TextView
+			      <com.todoroo.astrid.ui.CustomFontTextView
 			        android:layout_width="wrap_content"
 			        android:layout_height="wrap_content"
 			        android:text="@string/TEA_reminder_alarm_label"
 			        style="@style/TextAppearance.GEN_EditLabel.DLG_EditLabel" />
-			      <TextView
+			      <com.todoroo.astrid.ui.CustomFontTextView
 		             android:id="@+id/reminder_alarm_display"
 		             android:layout_width="fill_parent"
 		             android:layout_height="wrap_content"

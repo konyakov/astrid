@@ -33,7 +33,7 @@
         android:visibility="gone"/>
             
     <!-- filter name -->
-    <TextView android:id="@+id/name"
+    <com.todoroo.astrid.ui.CustomFontTextView android:id="@+id/name"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_marginLeft="55dp"
@@ -46,7 +46,7 @@
         android:gravity="center_vertical" />
         
     <!-- size -->
-    <TextView android:id="@+id/size"
+    <com.todoroo.astrid.ui.CustomFontTextView android:id="@+id/size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

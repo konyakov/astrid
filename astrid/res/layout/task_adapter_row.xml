@@ -63,7 +63,7 @@
 	
 	        <!-- task name -->
 	
-	        <TextView
+	        <com.todoroo.astrid.ui.CustomFontTextView
 	            android:id="@+id/title"
 	            style="@style/TextAppearance.TAd_ItemTitle"
 	            android:layout_width="0dip"
