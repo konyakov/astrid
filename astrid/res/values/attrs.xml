@@ -54,5 +54,9 @@
   <declare-styleable name="DateAndTimePicker">
       <attr name="shortcutLabels" format="reference"/>
   </declare-styleable>
+  
+  <declare-styleable name="CustomFontTextView">
+      <attr name="customFont" format="string"/>
+  </declare-styleable>
     
 </resources>

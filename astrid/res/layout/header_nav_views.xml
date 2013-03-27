@@ -5,6 +5,7 @@
 ** See the file "LICENSE" for the full license governing this code. 
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:astrid="http://schemas.android.com/apk/res/com.timsu.astrid"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal">
@@ -30,7 +31,7 @@
 		    android:paddingLeft="5dip"
 		    android:gravity="center_vertical">
 		    
-		    <TextView
+		    <com.todoroo.astrid.ui.CustomFontTextView
 		        android:id="@+id/list_title"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
@@ -39,7 +40,8 @@
 		        android:singleLine="true"
 		        android:layout_weight="1"
 		        android:ellipsize="end"
-		        style="@style/TextAppearance.ActionBar_ListsHeader"/>
+		        style="@style/TextAppearance.ActionBar_ListsHeader"
+		        astrid:customFont="HandmadeTypewriter.ttf"/>
 		    
 		    <ImageView
 		        android:id="@+id/list_disclosure_arrow"
