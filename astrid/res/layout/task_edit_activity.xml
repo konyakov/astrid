@@ -130,7 +130,7 @@
 
         <!-- Quick Add Task -->
 
-        <EditText
+        <com.todoroo.astrid.ui.CustomFontEditText
             android:id="@+id/commentField"
             android:layout_width="wrap_content"
             android:layout_height="39dip"

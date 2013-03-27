@@ -16,6 +16,7 @@ public class CustomFontTextView extends TextView {
 
     public CustomFontTextView(Context context) {
         super(context);
+        setDefaultFont();
     }
 
     public CustomFontTextView(Context context, AttributeSet attrs) {
@@ -33,7 +34,7 @@ public class CustomFontTextView extends TextView {
         boolean setCustomFont = false;
         for (int i = 0; i < ta.getIndexCount(); i++) {
             int index = ta.getIndex(i);
-            if (index == R.styleable.CustomFontTextView_customFont) {
+            if (index == R.styleable.CustomFontTextView_customTextFont) {
                 String customFont = ta.getString(index);
                 if (customFont != null) {
                     Typeface tf = TypefaceCache.getTypeface(customFont);
@@ -48,14 +49,18 @@ public class CustomFontTextView extends TextView {
         }
 
         if (!setCustomFont) {
-            Typeface defaultTf = TypefaceCache.getTypeface(DEFAULT_FONT);
-            if (defaultTf != null) {
-                defaultTypeface = defaultTf;
-                setTypeface(defaultTf);
-            }
+            setDefaultFont();
         }
 
         ta.recycle();
+    }
+
+    private void setDefaultFont() {
+        Typeface defaultTf = TypefaceCache.getTypeface(DEFAULT_FONT);
+        if (defaultTf != null) {
+            defaultTypeface = defaultTf;
+            setTypeface(defaultTf);
+        }
     }
 
     @Override

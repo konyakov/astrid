@@ -56,7 +56,11 @@
   </declare-styleable>
   
   <declare-styleable name="CustomFontTextView">
-      <attr name="customFont" format="string"/>
+      <attr name="customTextFont" format="string"/>
+  </declare-styleable>
+
+  <declare-styleable name="CustomFontEditText">
+      <attr name="customEditFont" format="string"/>
   </declare-styleable>
     
 </resources>
