@@ -13,7 +13,7 @@ public class CustomFontTextView extends TextView {
 
     private Typeface regularTypeface = null;
     private Typeface boldTypeface = null;
-    private static final String DEFAULT_FONT = "JosefinSans"; //$NON-NLS-1$
+    public static final String DEFAULT_FONT = "JosefinSans"; //$NON-NLS-1$
 
     public CustomFontTextView(Context context) {
         super(context);
@@ -72,5 +72,4 @@ public class CustomFontTextView extends TextView {
         super.setTextAppearance(context, resid);
         setStyledTypeface();
     }
-
 }

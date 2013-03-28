@@ -11,11 +11,13 @@ import com.todoroo.astrid.helper.TypefaceCache;
 
 public class CustomFontEditText extends EditText {
 
-    private Typeface defaultTypeface = null;
-    private static final String DEFAULT_FONT = "HandmadeTypewriter.ttf"; //$NON-NLS-1$
+    private Typeface regularTypeface = null;
+    private Typeface boldTypeface = null;
 
     public CustomFontEditText(Context context) {
         super(context);
+        setupDefaultFont();
+        setStyledTypeface();
     }
 
     public CustomFontEditText(Context context, AttributeSet attrs) {
@@ -29,40 +31,44 @@ public class CustomFontEditText extends EditText {
     }
 
     private void setCustomFont(Context context, AttributeSet attrs) {
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CustomFontTextView);
-        boolean setCustomFont = false;
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CustomFontEditText);
         for (int i = 0; i < ta.getIndexCount(); i++) {
             int index = ta.getIndex(i);
             if (index == R.styleable.CustomFontEditText_customEditFont) {
                 String customFont = ta.getString(index);
-                if (customFont != null) {
-                    Typeface tf = TypefaceCache.getTypeface(customFont);
-                    if (tf != null) {
-                        setCustomFont = true;
-                        defaultTypeface = tf;
-                        setTypeface(tf);
-                    }
-                }
+                setupTypefaces(customFont);
                 break;
             }
         }
 
-        if (!setCustomFont) {
-            Typeface defaultTf = TypefaceCache.getTypeface(DEFAULT_FONT);
-            if (defaultTf != null) {
-                defaultTypeface = defaultTf;
-                setTypeface(defaultTf);
-            }
+        if (regularTypeface == null) {
+            setupDefaultFont();
         }
 
+        setStyledTypeface();
+
         ta.recycle();
+    }
+
+    private void setupTypefaces(String name) {
+        boldTypeface = TypefaceCache.getTypeface(name + "-Bold.ttf"); //$NON-NLS-1$
+        regularTypeface = TypefaceCache.getTypeface(name + "-Regular.ttf"); //$NON-NLS-1$
+    }
+
+    private void setStyledTypeface() {
+        if (getTypeface() != null && (getTypeface().getStyle() & Typeface.BOLD) > 0 && boldTypeface != null)
+            setTypeface(boldTypeface);
+        else if (regularTypeface != null)
+            setTypeface(regularTypeface);
+    }
+
+    private void setupDefaultFont() {
+       setupTypefaces(CustomFontTextView.DEFAULT_FONT);
     }
 
     @Override
     public void setTextAppearance(Context context, int resid) {
         super.setTextAppearance(context, resid);
-        if (defaultTypeface != null)
-            setTypeface(defaultTypeface);
+        setStyledTypeface();
     }
-
 }
