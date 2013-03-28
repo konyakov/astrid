@@ -49,7 +49,7 @@
 	            android:gravity="center_vertical"
 	            android:background="@drawable/speech_bubble_reminder"
 	            android:layout_toRightOf="@id/astridIcon">
-	            <TextView 
+	            <com.todoroo.astrid.ui.CustomFontTextView 
 	                android:id="@+id/reminder_message"
 	                android:layout_width="fill_parent"
 	                android:layout_height="wrap_content"

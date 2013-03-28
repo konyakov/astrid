@@ -34,7 +34,7 @@
         android:gravity="center_vertical"
         android:layout_alignParentBottom="true">
         
-        <TextView
+        <com.todoroo.astrid.ui.CustomFontTextView
 		    android:id="@+id/new_list_button"
 		    android:layout_width="fill_parent"
 		    android:layout_height="fill_parent"

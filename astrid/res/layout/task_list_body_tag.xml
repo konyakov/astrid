@@ -45,7 +45,7 @@
 		    android:scaleType="fitCenter"/>
 	  </LinearLayout>
 	  
-	  <TextView
+	  <com.todoroo.astrid.ui.CustomFontTextView
 	    android:id="@+id/filter_assigned"
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
