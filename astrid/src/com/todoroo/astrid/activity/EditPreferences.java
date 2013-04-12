@@ -18,7 +18,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -32,6 +31,7 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.crittercism.app.Crittercism;
+import com.helpshift.Helpshift;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.ContextManager;
@@ -93,6 +93,8 @@ public class EditPreferences extends TodorooPreferenceActivity {
     @Autowired private TaskService taskService;
     @Autowired private AddOnService addOnService;
     @Autowired private ActFmPreferenceService actFmPreferenceService;
+
+    private Helpshift hs;
 
     @Autowired
     private Database database;
@@ -160,6 +162,8 @@ public class EditPreferences extends TodorooPreferenceActivity {
         addPluginPreferences(screen);
 
         addPreferencesFromResource(R.xml.preferences_misc);
+
+        hs = new Helpshift(this);
 
         final Resources r = getResources();
 
@@ -299,8 +303,9 @@ public class EditPreferences extends TodorooPreferenceActivity {
     }
 
     private void showSupport() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL));
-        startActivity(intent);
+        hs.showSupport(this);
+//        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_URL));
+//        startActivity(intent);
     }
 
     private void showBeastMode() {

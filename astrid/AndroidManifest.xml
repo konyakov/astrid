@@ -642,6 +642,35 @@
     </activity>
     <service android:name="com.todoroo.astrid.reminders.ReminderSchedulingService"/>
 
+    <!-- Helpshift -->
+    <activity android:name="com.helpshift.HelpshiftActivity"
+	          android:configChanges="orientation|screenSize"
+	          android:theme="@style/HSThemeLight" />
+	<activity android:name="com.helpshift.HSAddIssue"
+	          android:theme="@style/HSThemeLight"/>
+	<activity android:name="com.helpshift.HSAddProfile"
+	          android:theme="@style/HSThemeLight" />
+	<activity android:name="com.helpshift.HSMessages"
+	          android:theme="@style/HSThemeLight" />
+	<activity android:name="com.helpshift.HSQuestionsList"
+	          android:theme="@style/HSThemeLight" />
+	<activity android:name="com.helpshift.HSQuestion"
+	          android:hardwareAccelerated="true"
+	          android:configChanges="orientation|screenSize"
+	          android:theme="@style/HSThemeLight" />
+	<activity android:name="com.helpshift.HSSection"
+	          android:hardwareAccelerated="true"
+	          android:configChanges="orientation|screenSize"
+	          android:theme="@style/HSThemeLight" />
+	<activity android:name="com.helpshift.HSInbox"
+	          android:hardwareAccelerated="true"
+	          android:configChanges="orientation|screenSize"
+	          android:theme="@style/HSThemeLight" />
+	<activity android:name="com.helpshift.HSFaqs"
+	          android:hardwareAccelerated="true"
+	          android:configChanges="orientation|screenSize"
+	          android:theme="@style/HSThemeLight" />
+    
     <!-- other task actions -->
     <receiver android:name="com.todoroo.astrid.core.LinkActionExposer">
       <intent-filter>

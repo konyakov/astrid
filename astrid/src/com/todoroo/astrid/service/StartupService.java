@@ -26,6 +26,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.crittercism.app.Crittercism;
+import com.helpshift.Helpshift;
 import com.timsu.astrid.R;
 import com.todoroo.andlib.data.DatabaseDao.ModelUpdateListener;
 import com.todoroo.andlib.data.TodorooCursor;
@@ -151,6 +152,9 @@ public class StartupService {
         if(!StatisticsService.dontCollectStatistics()) {
             Crittercism.init(context.getApplicationContext(), Constants.CRITTERCISM_APP_ID);
         }
+
+        Helpshift hs = new Helpshift(context);
+        hs.install(context, "8dfc4ff4aa0fa194c42961fc2f8e4160", "astrid.helpshift.com", "astrid_platform_20130219214332797-39c5822833abb6f");
 
         try {
             database.openForWriting();

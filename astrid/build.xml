@@ -339,6 +339,19 @@
                        match="fb_app_id&quot;&gt;.*&lt;"
                        replace="fb_app_id&quot;&gt;183862944961271&lt;" />
 	</target>
+	
+	<target name="-post-compile">
+		<path id="helpshift-classpath">
+		  <fileset dir="./libs/">
+		    <include name="Helpshift.jar"/>
+		  </fileset>
+		</path>
+		 
+		<java classname="com.helpshift.HSPostCompileCheck" failonerror="true">
+		  <classpath refid="helpshift-classpath"/>
+		  <arg value="com.timsu.astrid"/>
+		</java>
+	</target>
 
     <!-- build custom unsigned package with updated version name -->
     <target name="unsigned-custom" depends="clean">
