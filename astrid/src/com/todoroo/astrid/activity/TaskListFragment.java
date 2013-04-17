@@ -39,6 +39,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
@@ -218,6 +220,9 @@ public class TaskListFragment extends SherlockListFragment implements OnScrollLi
     protected OnTaskListItemClickedListener mListener;
     private boolean mDualFragments = false;
 
+    private Animation animateInvisible;
+    private Animation animateVisible;
+
     /*
      * ======================================================================
      * ======================================================= initialization
@@ -322,6 +327,11 @@ public class TaskListFragment extends SherlockListFragment implements OnScrollLi
         extras = getArguments() != null ? getArguments().getBundle(TOKEN_EXTRAS) : null;
         if (extras == null)
             extras = new Bundle(); // Just need an empty one to prevent potential null pointers
+
+        animateInvisible = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 1.0f);
+        animateInvisible.setDuration(200);
+        animateVisible = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, 1.0f, Animation.RELATIVE_TO_SELF, 0.0f);
+        animateVisible.setDuration(200);
     }
 
     /*
@@ -910,15 +920,20 @@ public class TaskListFragment extends SherlockListFragment implements OnScrollLi
 
     public void onScroll(AbsListView view, int firstVisibleItem,
             int visibleItemCount, int totalItemCount) {
-        int pos = view.getFirstVisiblePosition();
-        if (pos < lastVisiblePosition) {
-            // Hide quick add
-            quickAddBar.setVisibility(View.VISIBLE);
-        } else if (pos > 0) {
-            // show quick add
-            quickAddBar.setVisibility(View.GONE);
+        if (quickAddBar != null) {
+            if (firstVisibleItem > lastVisiblePosition) {
+                // Hide quick add
+                if (quickAddBar.getVisibility() == View.VISIBLE)
+                    quickAddBar.startAnimation(animateInvisible);
+                quickAddBar.setVisibility(View.GONE);
+            } else if (firstVisibleItem < lastVisiblePosition) {
+                // show quick add
+                if (quickAddBar.getVisibility() == View.GONE)
+                    quickAddBar.startAnimation(animateVisible);
+                quickAddBar.setVisibility(View.VISIBLE);
+            }
+            lastVisiblePosition = firstVisibleItem;
         }
-        lastVisiblePosition = pos;
     }
 
     private int lastVisiblePosition = 0;
