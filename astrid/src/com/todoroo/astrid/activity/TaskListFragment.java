@@ -910,31 +910,24 @@ public class TaskListFragment extends SherlockListFragment implements OnScrollLi
 
     public void onScroll(AbsListView view, int firstVisibleItem,
             int visibleItemCount, int totalItemCount) {
-        // do nothing
+        int pos = view.getFirstVisiblePosition();
+        if (pos < lastVisiblePosition) {
+            // Hide quick add
+            quickAddBar.setVisibility(View.VISIBLE);
+        } else if (pos > 0) {
+            // show quick add
+            quickAddBar.setVisibility(View.GONE);
+        }
+        lastVisiblePosition = pos;
     }
 
+    private int lastVisiblePosition = 0;
+
     /**
-     * Detect when user is flinging the task, disable task adapter loading when
-     * this occurs to save resources and time.
+     * Detect when user is flinging the task
      */
     public void onScrollStateChanged(AbsListView view, int scrollState) {
-        if (taskAdapter == null)
-            return;
-        switch (scrollState) {
-        case OnScrollListener.SCROLL_STATE_IDLE:
-            if (taskAdapter.isFling)
-                taskAdapter.notifyDataSetChanged();
-            taskAdapter.isFling = false;
-            break;
-        case OnScrollListener.SCROLL_STATE_TOUCH_SCROLL:
-            if (taskAdapter.isFling)
-                taskAdapter.notifyDataSetChanged();
-            taskAdapter.isFling = false;
-            break;
-        case OnScrollListener.SCROLL_STATE_FLING:
-            taskAdapter.isFling = true;
-            break;
-        }
+        // do nothing
     }
 
     /*
